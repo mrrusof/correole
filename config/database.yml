@@ -1,0 +1,9 @@
+development: &default
+  adapter: sqlite3
+  database: correole.db
+
+test:
+  <<: *default
+
+production:
+  <<: *default
