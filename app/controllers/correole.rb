@@ -8,9 +8,9 @@ class Correole < Sinatra::Base
     content_type 'text/plain'
   end
 
-   after do
-     ActiveRecord::Base.clear_active_connections!
-   end
+  after do
+    ActiveRecord::Base.clear_active_connections!
+  end
 
   get '/subscribers/:email' do
     s = Subscriber.find_by_email(params[:email])
