@@ -18,4 +18,3 @@ ActiveRecord::Migration.create_table :subscribers do |t|
   t.index :email, unique: true
   t.timestamps null: false
 end
-

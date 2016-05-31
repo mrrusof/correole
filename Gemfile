@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 gem 'sinatra', '~> 1.4'
 gem 'thin', '~> 1.7'
 gem 'sinatra-activerecord', '~> 2.0'
-gem 'pg'
+gem 'pg', :group => :production
+gem 'sqlite3', :group => [ :test, :development ]
 gem 'minitest', '~> 5.8'
 gem 'rack-test', '~> 0.6'

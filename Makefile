@@ -1,9 +1,9 @@
 exec:
-	ruby -I lib bin/correole
+	bundle exec ruby -I lib -I config bin/correole
 
 test:
 	@for f in test/*_spec.rb; do \
-	  ruby $$f || exit 1; \
+	  bundle exec ruby -I lib -I config $$f || exit 1; \
 	done
 
 migrate:

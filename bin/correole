@@ -1,8 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'sinatra/base'
-require 'sinatra/activerecord'
-require 'correole'
-require 'subscriber'
+require 'dependencies'
 
 Correole.run!
