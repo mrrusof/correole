@@ -1,5 +1,3 @@
-require 'sinatra'
-
 class Correole < Sinatra::Base
 
   set :server, :thin

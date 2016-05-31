@@ -2,7 +2,8 @@ ENV['RACK_ENV'] = 'test'
 
 require 'minitest/autorun'
 require 'rack/test'
-require 'active_record'
+require 'sinatra/base'
+require 'sinatra/activerecord'
 require File.expand_path '../../lib/correole.rb', __FILE__
 require File.expand_path '../../lib/subscriber.rb', __FILE__
 
