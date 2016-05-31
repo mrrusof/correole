@@ -62,6 +62,18 @@ describe 'subscription' do
     assert s.updated_at >= updated_at, 'does not touch updated_at'
   end
 
+  it 'does not allow getting a subscriber' do
+    get '/subscribers/some@mail.com'
+    assert last_response.method_not_allowed?, 'is getting a subscriber allowed?'
+    assert_equal "Method not allowed\n", last_response.body
+  end
+
+  it 'does not allow posting a subscriber' do
+    post '/subscribers/some@mail.com'
+    assert last_response.method_not_allowed?, 'is posting a subscriber allowed?'
+    assert_equal "Method not allowed\n", last_response.body
+  end
+
 end
 
 class Correole
