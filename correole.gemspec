@@ -15,6 +15,6 @@ EOF
   s.files       = ['lib/correole.rb']
   s.executables = ['correole']
   s.add_dependency 'sinatra', '~> 1.4'
-  s.add_dependency 'thin', '~> 1.6'
+  s.add_dependency 'thin', '~> 1.7'
   s.add_dependency 'sinatra-activerecord', '~> 2.0'
 end
