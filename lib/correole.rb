@@ -1,8 +1,10 @@
+require 'sinatra'
+
 class Correole < Sinatra::Base
 
   set :server, :thin
-  set :logging, true
-  set :show_exceptions, false
+  enable :logging
+  disable :show_exceptions
 
   before do
     content_type 'text/plain'
@@ -12,23 +14,17 @@ class Correole < Sinatra::Base
     ActiveRecord::Base.clear_active_connections!
   end
 
-  get '/subscribers/:email' do
-    s = Subscriber.find_by_email(params[:email])
-    raise Sinatra::NotFound.new if s == nil
-    content_type 'application/json'
-    s.to_json
-  end
-
   put '/subscribers/:email' do
     s = Subscriber.new(email: params[:email])
     return 400 if not s.valid?
     begin
       s.save
+      logger.info("Subscribed #{params[:email]}")
     rescue ActiveRecord::RecordNotUnique
-      logger.info("Already subscribed #{s}")
+      logger.info("Already subscribed #{params[:email]}")
       Subscriber.find_by_email(params[:email]).touch
     end
-    [201, "Subscribed #{params[:email]}\n"]
+    "#{params[:email]}\n"
   end
 
   post '/subscribers/:email' do
@@ -47,7 +43,8 @@ class Correole < Sinatra::Base
     [405, "Method not allowed\n"]
   end
 
-  error do
+  error 500 do
     [500, "Internal server error\n"]
   end
+
 end

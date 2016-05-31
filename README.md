@@ -1,4 +1,4 @@
 # Correole
 
-Correole is a newsletter webservice. Features are
-subscribe, unsubscribe, and send newsletters.
+Correole is a webservice that subscribes and unsubscribes readers from
+a newsletter.
