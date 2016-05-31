@@ -3,6 +3,8 @@ require 'active_record'
 
 ENV["RACK_ENV"] ||= 'development'
 
+puts "Environment is #{ENV['RACK_ENV']}\n"
+
 begin
   ActiveRecord::Base.connection
 rescue

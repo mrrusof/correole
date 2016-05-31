@@ -17,4 +17,5 @@ EOF
   s.add_dependency 'sinatra', '~> 1.4'
   s.add_dependency 'thin', '~> 1.7'
   s.add_dependency 'sinatra-activerecord', '~> 2.0'
+  s.add_dependency 'pg'
 end

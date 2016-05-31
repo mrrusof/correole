@@ -1,9 +1,9 @@
-development: &default
+test: &default
   adapter: sqlite3
   database: correole.db
 
-test:
+development:
   <<: *default
 
-production:
-  <<: *default
+production: 
+  adapter: postgresql
