@@ -2,15 +2,13 @@ exec:
 	bundle exec ruby -I lib -I config bin/correole
 
 test: test.db
-	@for f in test/*/*_spec.rb; do \
-	  echo $$f; \
-	  bundle exec ruby -I lib -I config $$f || exit 1; \
-	done
+	bundle exec rake test
 
 %.db:
-	RACK_ENV=$* ruby db/migrate.rb
+	RACK_ENV=$* bundle exec rake db:schema:load
 
 clean:
-	rm -rf *.gem *.db *~
+	rm -rf *.gem *.db
+	find . -name '*~' -delete
 
 .PHONY: exec test clean
