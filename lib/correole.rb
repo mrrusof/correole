@@ -22,6 +22,10 @@ class Correole < Sinatra::Base
     "#{params[:email]}\n"
   end
 
+  delete '/subscribers/:email' do
+    405
+  end
+
   get '/subscribers/:email' do
     405
   end
