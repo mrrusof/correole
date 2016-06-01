@@ -1,6 +1,3 @@
-exec:
-	bundle exec ruby -I lib -I config bin/correole
-
 test: test.db
 	bundle exec rake test
 

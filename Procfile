@@ -1,1 +1,1 @@
-web: make exec
+web: bundle exec ruby -I lib -I config bin/correole
