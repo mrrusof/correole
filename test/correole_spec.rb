@@ -7,7 +7,7 @@ end
 describe 'subscription' do
 
   it 'returns the subscriber email' do
-    email = 'return_subscriber_email@gmail.com'
+    email = "return_subscriber_email_#{Time.now.to_i}@gmail.com"
     put "/subscribers/#{email}"
     assert last_response.ok?
     assert_equal 'text/plain;charset=utf-8', last_response.content_type
@@ -15,7 +15,7 @@ describe 'subscription' do
   end
 
   it 'records the subscriber in the database' do
-    email = 'record_subscriber@gmail.com'
+    email = "record_subscriber_#{Time.now.to_i}@gmail.com"
     s = Subscriber.find_by_email(email)
     s.must_be_nil
     put "/subscribers/#{email}"
@@ -25,13 +25,13 @@ describe 'subscription' do
   end
 
   it 'returns 400 if the email is not valid' do
-    email = 'invalidemail.com'
+    email = "invalidemail_#{Time.now.to_i}.com"
     put "/subscribers/#{email}"
     assert last_response.bad_request?
   end
 
   it 'is idempotent' do
-    email = 'idempotent@gmail.com'
+    email = "idempotent_#{Time.now.to_i}@gmail.com"
     s = Subscriber.find_by_email(email)
     s.must_be_nil
     put "/subscribers/#{email}"
@@ -45,7 +45,7 @@ describe 'subscription' do
   end
 
   it 'touches the subscriber when already subscribed' do
-    email = 'touch@gmail.com'
+    email = "touch_#{Time.now.to_i}@gmail.com"
     s = Subscriber.find_by_email(email)
     s.must_be_nil
     put "/subscribers/#{email}"

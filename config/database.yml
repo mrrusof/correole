@@ -1,9 +1,10 @@
-test: &default
+test:
   adapter: sqlite3
-  database: correole.db
+  database: test.db
 
 development:
-  <<: *default
+  adapter: sqlite3
+  database: development.db
 
 production: 
   adapter: postgresql
