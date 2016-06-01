@@ -1,5 +1,8 @@
 class Correole < Sinatra::Base
 
+  ALLOWED_METHODS = 'PUT, OPTIONS'
+  ALLOWED_ORIGIN = '*'
+
   set :server, :thin
   enable :logging
   disable :show_exceptions
@@ -9,7 +12,14 @@ class Correole < Sinatra::Base
     content_type 'text/plain'
   end
 
+  options '/subscribers/:email' do
+    response.headers['Access-Control-Allow-Methods'] = ALLOWED_METHODS
+    response.headers['Access-Control-Allow-Origin'] = ALLOWED_ORIGIN
+    200
+  end
+
   put '/subscribers/:email' do
+    response.headers['Access-Control-Allow-Origin'] = ALLOWED_ORIGIN
     s = Subscriber.new(email: params[:email])
     return 400 if not s.valid?
     begin

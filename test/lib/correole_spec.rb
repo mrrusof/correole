@@ -4,62 +4,91 @@ def app
   Correole
 end
 
-describe 'subscription' do
+describe 'subscribers' do
 
-  it 'returns the subscriber email' do
-    email = "return_subscriber_email_#{Time.now.to_i}@gmail.com"
-    put "/subscribers/#{email}"
-    assert last_response.ok?
-    assert_equal 'text/plain;charset=utf-8', last_response.content_type
-    assert_equal "#{email}\n", last_response.body
+  describe 'options' do
+
+    it 'allows subscriptions from other domains' do
+      email = "allow_other_domains_#{Time.now.to_i}@gmail.com"
+      options "/subscribers/#{email}"
+      assert last_response.ok?
+      last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
+    end
+
+    it 'allows methods PUT and OPTIONS' do
+      email = "allow_other_domains_#{Time.now.to_i}@gmail.com"
+      options "/subscribers/#{email}"
+      assert last_response.ok?
+      last_response.headers['Access-Control-Allow-Methods'].must_equal 'PUT, OPTIONS'
+    end
+
   end
 
-  it 'records the subscriber in the database' do
-    email = "record_subscriber_#{Time.now.to_i}@gmail.com"
-    s = Subscriber.find_by_email(email)
-    s.must_be_nil
-    put "/subscribers/#{email}"
-    s = Subscriber.find_by_email(email)
-    s.wont_be_nil
-    s.email.must_equal email
-  end
+  describe 'create' do
 
-  it 'returns 400 if the email is not valid' do
-    email = "invalidemail_#{Time.now.to_i}.com"
-    put "/subscribers/#{email}"
-    assert last_response.bad_request?
-  end
+    it 'returns the subscriber email' do
+      email = "return_subscriber_email_#{Time.now.to_i}@gmail.com"
+      put "/subscribers/#{email}"
+      assert last_response.ok?
+      assert_equal 'text/plain;charset=utf-8', last_response.content_type
+      assert_equal "#{email}\n", last_response.body
+    end
 
-  it 'is idempotent' do
-    email = "idempotent_#{Time.now.to_i}@gmail.com"
-    s = Subscriber.find_by_email(email)
-    s.must_be_nil
-    put "/subscribers/#{email}"
-    s = Subscriber.find_by_email(email)
-    s.wont_be_nil
-    s.email.must_equal email
-    put "/subscribers/#{email}"
-    s = Subscriber.find_by_email(email)
-    s.wont_be_nil
-    s.email.must_equal email
-  end
+    it 'records the subscriber in the database' do
+      email = "record_subscriber_#{Time.now.to_i}@gmail.com"
+      s = Subscriber.find_by_email(email)
+      s.must_be_nil
+      put "/subscribers/#{email}"
+      s = Subscriber.find_by_email(email)
+      s.wont_be_nil
+      s.email.must_equal email
+    end
 
-  it 'touches the subscriber when already subscribed' do
-    email = "touch_#{Time.now.to_i}@gmail.com"
-    s = Subscriber.find_by_email(email)
-    s.must_be_nil
-    put "/subscribers/#{email}"
-    s = Subscriber.find_by_email(email)
-    s.wont_be_nil
-    s.email.must_equal email
-    updated_at = s.updated_at
-    s.updated_at = updated_at - 1
-    s.save
-    put "/subscribers/#{email}"
-    s = Subscriber.find_by_email(email)
-    s.wont_be_nil
-    s.email.must_equal email
-    assert s.updated_at >= updated_at, 'does not touch updated_at'
+    it 'returns 400 if the email is not valid' do
+      email = "invalidemail_#{Time.now.to_i}.com"
+      put "/subscribers/#{email}"
+      assert last_response.bad_request?
+    end
+
+    it 'is idempotent' do
+      email = "idempotent_#{Time.now.to_i}@gmail.com"
+      s = Subscriber.find_by_email(email)
+      s.must_be_nil
+      put "/subscribers/#{email}"
+      s = Subscriber.find_by_email(email)
+      s.wont_be_nil
+      s.email.must_equal email
+      put "/subscribers/#{email}"
+      s = Subscriber.find_by_email(email)
+      s.wont_be_nil
+      s.email.must_equal email
+    end
+
+    it 'touches the subscriber when already subscribed' do
+      email = "touch_#{Time.now.to_i}@gmail.com"
+      s = Subscriber.find_by_email(email)
+      s.must_be_nil
+      put "/subscribers/#{email}"
+      s = Subscriber.find_by_email(email)
+      s.wont_be_nil
+      s.email.must_equal email
+      updated_at = s.updated_at
+      s.updated_at = updated_at - 1
+      s.save
+      put "/subscribers/#{email}"
+      s = Subscriber.find_by_email(email)
+      s.wont_be_nil
+      s.email.must_equal email
+      assert s.updated_at >= updated_at, 'does not touch updated_at'
+    end
+
+    it 'allows subscriptions from other domains' do
+      email = "allow_other_domains_#{Time.now.to_i}@gmail.com"
+      put "/subscribers/#{email}"
+      assert last_response.ok?
+      last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
+    end
+
   end
 
   it 'does not allow deleting a subscriber' do
