@@ -1,6 +1,6 @@
 class Correole < Sinatra::Base
 
-  ALLOWED_METHODS = 'PUT, OPTIONS'
+  ALLOWED_METHODS = 'PUT, DELETE, OPTIONS'
   ALLOWED_ORIGIN = '*'
 
   set :server, :thin
@@ -33,7 +33,9 @@ class Correole < Sinatra::Base
   end
 
   delete '/subscribers/:email' do
-    405
+    s = Subscriber.find_by_email(params[:email])
+    s.delete if s != nil
+    "#{params[:email]}\n"
   end
 
   get '/subscribers/:email' do

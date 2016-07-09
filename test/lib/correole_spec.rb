@@ -15,11 +15,11 @@ describe 'subscribers' do
       last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
     end
 
-    it 'allows methods PUT and OPTIONS' do
+    it 'allows methods PUT, DELETE, and OPTIONS' do
       email = "allow_other_domains_#{Time.now.to_i}@gmail.com"
       options "/subscribers/#{email}"
       assert last_response.ok?
-      last_response.headers['Access-Control-Allow-Methods'].must_equal 'PUT, OPTIONS'
+      last_response.headers['Access-Control-Allow-Methods'].must_equal 'PUT, DELETE, OPTIONS'
     end
 
   end
@@ -27,7 +27,7 @@ describe 'subscribers' do
   describe 'create' do
 
     it 'returns the subscriber email' do
-      email = "return_subscriber_email_#{Time.now.to_i}@gmail.com"
+      email = "return_created_subscriber_email_#{Time.now.to_i}@gmail.com"
       put "/subscribers/#{email}"
       assert last_response.ok?
       assert_equal 'text/plain;charset=utf-8', last_response.content_type
@@ -51,7 +51,7 @@ describe 'subscribers' do
     end
 
     it 'is idempotent' do
-      email = "idempotent_#{Time.now.to_i}@gmail.com"
+      email = "idempotent_subscribe_#{Time.now.to_i}@gmail.com"
       s = Subscriber.find_by_email(email)
       s.must_be_nil
       put "/subscribers/#{email}"
@@ -91,10 +91,39 @@ describe 'subscribers' do
 
   end
 
-  it 'does not allow deleting a subscriber' do
-    delete '/subscribers/some@mail.com'
-    assert last_response.method_not_allowed?, 'is getting a subscriber allowed?'
-    assert_equal "Method not allowed\n", last_response.body
+  describe 'delete' do
+
+    it 'returns the subscriber email' do
+      email = "return_deleted_subscriber_email_#{Time.now.to_i}@gmail.com"
+      s = Subscriber.new(email: email)
+      s.save
+      delete "/subscribers/#{email}"
+      assert last_response.ok?
+      assert_equal 'text/plain;charset=utf-8', last_response.content_type
+      assert_equal "#{email}\n", last_response.body
+    end
+
+    it 'deletes the subscriber from the database' do
+      email = "delete_subscriber_email_#{Time.now.to_i}@gmail.com"
+      s = Subscriber.new(email: email)
+      s.save
+      delete "/subscribers/#{email}"
+      s = Subscriber.find_by_email(email)
+      s.must_be_nil
+    end
+
+    it 'is idempotent' do
+      email = "idempotent_delete_#{Time.now.to_i}@gmail.com"
+      s = Subscriber.new(email: email)
+      s.save
+      delete "/subscribers/#{email}"
+      s = Subscriber.find_by_email(email)
+      s.must_be_nil
+      delete "/subscribers/#{email}"
+      s = Subscriber.find_by_email(email)
+      s.must_be_nil
+    end
+
   end
 
   it 'does not allow getting a subscriber' do
