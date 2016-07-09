@@ -1,7 +1,7 @@
-require File.expand_path '../../test_helper.rb', __FILE__
+require File.expand_path '../../../test_helper.rb', __FILE__
 
 def app
-  CorreoleAPI
+  Api
 end
 
 describe 'subscribers' do
@@ -140,7 +140,7 @@ describe 'subscribers' do
 
 end
 
-class CorreoleAPI
+class Api
   get '/internal-server-error' do
     500
   end

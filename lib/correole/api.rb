@@ -1,4 +1,4 @@
-class CorreoleAPI < Sinatra::Base
+class Api < Sinatra::Base
 
   ALLOWED_METHODS = 'PUT, DELETE, OPTIONS'
   ALLOWED_ORIGIN = '*'

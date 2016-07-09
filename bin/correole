@@ -2,4 +2,4 @@
 
 require 'dependencies'
 
-CorreoleAPI.run!
+Api.run!
