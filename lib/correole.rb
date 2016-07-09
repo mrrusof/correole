@@ -34,7 +34,12 @@ class Correole < Sinatra::Base
 
   delete '/subscribers/:email' do
     s = Subscriber.find_by_email(params[:email])
-    s.delete if s != nil
+    if s != nil
+      s.delete
+      logger.info("Unsubscribed #{params[:email]}")
+    else
+      logger.info("Already unsubscribed #{params[:email]}")
+    end
     "#{params[:email]}\n"
   end
 
