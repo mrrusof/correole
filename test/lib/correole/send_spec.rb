@@ -2,6 +2,9 @@ require File.expand_path '../../../test_helper.rb', __FILE__
 
 describe 'Send' do
 
+  let(:base_uri) { 'http://ruslanledesma.com' }
+  let(:subject) { '<%= title %> - <%= date %>' }
+  let(:from) { 'no-reply <no-reply@ruslanledesma.com>' }
   let(:recipient1) { 'recipient1@gmail.com' }
   let(:title) { 'Ruslan writes code' }
   let(:item1_pub_date) { 'Fri, 17 Jun 2016 00:00:00 +0000' }
@@ -176,7 +179,7 @@ EOF
 
     </ul>
 
-    <a href="#{Configuration::BASE_URI}/subscribers/<%= email %>">Unsubscribe here.</a>
+    <a href="#{Configuration::BASE_URI}/subscribers/<%= recipient %>">Unsubscribe here.</a>
   </body>
 </html>
 EOF
@@ -245,7 +248,7 @@ Items
 
   #{item2.description}
 
-Unsubscribe here: #{Configuration::BASE_URI}/subscribers/<%= email %>
+Unsubscribe here: #{Configuration::BASE_URI}/subscribers/<%= recipient %>
 EOF
   }
   let(:plain_recipient1) {
@@ -321,23 +324,26 @@ EOF
 
   end
 
-  describe '.template_bindings' do
-
-    it 'returns template bindings' do
-      b = Send.send(:template_bindings, split_feed)
-      b.eval('title').must_equal split_feed[:title]
-      b.eval('unsent_items').must_equal split_feed[:unsent_item]
-      b.eval('sent_items').must_equal split_feed[:sent_item]
-      b.eval('unsubscribe_uri').must_equal "#{Configuration::BASE_URI}/subscribers/<%= email %>"
-    end
-
-  end
-
   class Configuration
     def self.redefine_const(const, template)
       remove_const(const)
       const_set(const, template)
     end
+  end
+
+  describe '.template_bindings' do
+
+    it 'returns template bindings' do
+      curr_base_uri = Configuration::BASE_URI
+      Configuration.redefine_const(:BASE_URI, base_uri)
+      b = Send.send(:template_bindings, split_feed)
+      b.eval('title').must_equal split_feed[:title]
+      b.eval('unsent_items').must_equal split_feed[:unsent_item]
+      b.eval('sent_items').must_equal split_feed[:sent_item]
+      b.eval('unsubscribe_uri').must_equal "#{Configuration::BASE_URI}/subscribers/<%= recipient %>"
+      Configuration.redefine_const(:BASE_URI, curr_base_uri)
+    end
+
   end
 
   describe '.compose_html' do
@@ -376,8 +382,50 @@ EOF
 
   describe '.send_out' do
 
+    before do
+      @curr_from = Configuration::FROM
+      Configuration.redefine_const(:FROM, from)
+      @curr_subject = Configuration::SUBJECT
+      Configuration.redefine_const(:SUBJECT, subject)
+      Mail.defaults { delivery_method :test }
+      Mail::TestMailer.deliveries.clear
+    end
+
+    after do
+      Configuration.redefine_const(:FROM, @curr_from)
+      Configuration.redefine_const(:FROM, @curr_subject)
+    end
+
     it 'sends out the message to given recipient' do
-      Send.send(:send_out, nil, nil).must_equal 'WIP: self.send_out'
+      mail = Send.send(:send_out, feed[:title], html_recipient1, plain_recipient1, recipient1)
+      Mail::TestMailer.deliveries[0].must_equal mail
+    end
+
+    it 'applies the recipient' do
+      Send.send(:send_out, feed[:title], html_recipient1, plain_recipient1, recipient1)
+      mail = Mail::TestMailer.deliveries[0]
+      /From: ([^\r\n]+)/.match(mail.to_s)[1].must_equal Configuration::FROM
+    end
+
+    it 'applies the subject' do
+      date = nil # supress unused variable warning
+      date = Date.today.strftime('%a, %d %b %Y')
+      expected = ERB.new(Configuration::SUBJECT).result(binding)
+      Send.send(:send_out, feed[:title], html_recipient1, plain_recipient1, recipient1)
+      mail = Mail::TestMailer.deliveries[0]
+      /Subject: ([^\r\n]+)/.match(mail.to_s)[1].must_equal expected
+    end
+
+    it 'includes the html part' do
+      Send.send(:send_out, feed[:title], html_recipient1, plain_recipient1, recipient1)
+      mail = Mail::TestMailer.deliveries[0]
+      assert mail.to_s.index(html_recipient1.gsub(/\n/, "\r\n")) != nil, 'mail does not include html part'
+    end
+
+    it 'includes the plain part' do
+      Send.send(:send_out, feed[:title], html_recipient1, plain_recipient1, recipient1)
+      mail = Mail::TestMailer.deliveries[0]
+      assert mail.to_s.index(plain_recipient1.gsub(/\n/, "\r\n")) != nil, 'mail does not include plain part'
     end
 
   end

@@ -1,3 +1,5 @@
+require 'mail'
+
 class Send
 
   def self.run!
@@ -43,8 +45,8 @@ class Send
     title = split_feed[:title]
     unsent_items = split_feed[:unsent_item]
     sent_items = split_feed[:sent_item]
-    unsubscribe_uri = nil
-    unsubscribe_uri = "#{Configuration::BASE_URI}/subscribers/<%= email %>"
+    unsubscribe_uri = nil # supress unused variable warning
+    unsubscribe_uri = "#{Configuration::BASE_URI}/subscribers/<%= recipient %>"
     title = '' if !title.is_a?(String)
     unsent_items = [] if !unsent_items.is_a?(Array)
     sent_items = [] if !unsent_items.is_a?(Array)
@@ -63,12 +65,27 @@ class Send
     return ERB.new(template).result(bindings)
   end
 
-  def self.personalize(message, email)
+  def self.personalize(message, recipient)
     return ERB.new(message).result(binding)
   end
 
-  def self.send_out(message, email)
-    return 'WIP: self.send_out'
+  def self.send_out(title, html, plain, recipient)
+    date = nil # supress unused variable warning
+    date = Date.today.strftime('%a, %d %b %Y')
+    Mail.deliver do
+      to      recipient
+      from    Configuration::FROM
+      subject ERB.new(Configuration::SUBJECT).result(binding)
+
+      text_part do
+        body plain
+      end
+
+      html_part do
+        content_type 'text/html; charset=UTF-8'
+        body html
+      end
+    end
   end
 
 end
