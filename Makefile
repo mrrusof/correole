@@ -8,4 +8,4 @@ clean:
 	rm -rf *.gem *.db
 	find . -name '*~' -delete
 
-.PHONY: exec test clean
+.PHONY: test clean

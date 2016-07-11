@@ -3,7 +3,15 @@ require 'mail'
 class Send
 
   def self.run!
-    puts 'WIP: send out latest items'
+    split_feed = split_items feed
+    html = compose_html split_feed
+    plain = compose_plain split_feed
+    Subscriber.find_each do |s|
+      html_s = personalize html, s.email
+      plain_s = personalize plain, s.email
+      send_out feed[:title], html_s, plain_s, s.email
+    end
+    split_feed[:unsent_item].each { |i| i.save }
   end
 
   private

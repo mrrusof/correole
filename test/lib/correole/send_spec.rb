@@ -2,10 +2,13 @@ require File.expand_path '../../../test_helper.rb', __FILE__
 
 describe 'Send' do
 
-  let(:base_uri) { 'http://ruslanledesma.com' }
-  let(:subject) { '<%= title %> - <%= date %>' }
-  let(:from) { 'no-reply <no-reply@ruslanledesma.com>' }
-  let(:recipient1) { 'recipient1@gmail.com' }
+  let(:base_uri) { 'http://test.ruslanledesma.com' }
+  let(:subject) { 'Test <%= title %> - <%= date %>' }
+  let(:from) { 'no-reply <test@ruslanledesma.com>' }
+
+  let(:subscriber1) { Subscriber.new(email: 'subscriber1@gmail.com') }
+  let(:subscriber2) { Subscriber.new(email: 'subscriber2@gmail.com') }
+
   let(:title) { 'Ruslan writes code' }
   let(:item1_pub_date) { 'Fri, 17 Jun 2016 00:00:00 +0000' }
   let(:item1) {
@@ -184,7 +187,7 @@ EOF
 </html>
 EOF
   }
-  let(:html_recipient1) {
+  let(:html_subscriber1) {
     <<-EOF
 <html>
   <body>
@@ -210,7 +213,7 @@ EOF
 
     </ul>
 
-    <a href="#{Configuration::BASE_URI}/subscribers/#{recipient1}">Unsubscribe here.</a>
+    <a href="#{Configuration::BASE_URI}/subscribers/#{subscriber1.email}">Unsubscribe here.</a>
   </body>
 </html>
 EOF
@@ -251,7 +254,7 @@ Items
 Unsubscribe here: #{Configuration::BASE_URI}/subscribers/<%= recipient %>
 EOF
   }
-  let(:plain_recipient1) {
+  let(:plain_subscriber1) {
     <<-EOF
 #{title}
 
@@ -269,19 +272,68 @@ Items
 
   #{item2.description}
 
-Unsubscribe here: #{Configuration::BASE_URI}/subscribers/#{recipient1}
+Unsubscribe here: #{Configuration::BASE_URI}/subscribers/#{subscriber1.email}
 EOF
   }
 
+  class Configuration
+    def self.redefine_const(const, template)
+      remove_const(const)
+      const_set(const, template)
+    end
+  end
+
+  before do
+    @curr_base_uri = Configuration::BASE_URI
+    Configuration.redefine_const(:BASE_URI, base_uri)
+    @curr_subject = Configuration::SUBJECT
+    Configuration.redefine_const(:SUBJECT, subject)
+    @curr_from = Configuration::FROM
+    Configuration.redefine_const(:FROM, from)
+    @curr_html_template = Configuration::HTML_TEMPLATE
+    Configuration.redefine_const(:HTML_TEMPLATE, html_template)
+    @curr_plain_template = Configuration::PLAIN_TEMPLATE
+    Configuration.redefine_const(:PLAIN_TEMPLATE, plain_template)
+  end
 
   describe '.run!' do
 
-    it 'sends out the latest items' do
-      curr_stdout = $stdout
-      $stdout = StringIO.new
-      Send.run!
-      $stdout.string.must_equal "WIP: send out latest items\n"
-      $stdout = curr_stdout
+    before do
+      Mail.defaults { delivery_method :test }
+      Mail::TestMailer.deliveries.clear
+      Subscriber.destroy_all
+      subscriber1.save
+      subscriber2.save
+      Item.destroy_all
+      split_feed[:sent_item].each { |i| i.save }
+      Net::HTTP.stub :get, xml do
+        Send.run!
+      end
+    end
+
+    it 'sends out the newsletter to all subscribers' do
+      Subscriber.find_each do |s|
+        assert Mail::TestMailer.deliveries.any? { |m| m.to[0] == s.email }, "newsletter was not sent to subscriber #{s}"
+      end
+    end
+
+    it 'sends out the newsletter only to subscribers' do
+      Subscriber.find_each do |s|
+        Mail::TestMailer.deliveries.keep_if { |m| m.to[0] != s.email }
+      end
+      Mail::TestMailer.deliveries.must_equal [], "newsletter was sent to unknown recipients"
+    end
+
+    it 'sends each mail only to one recipient' do
+      Mail::TestMailer.deliveries.each do |m|
+        m.to.length.must_equal 1, "newsletter was sent to more than one recipient"
+      end
+    end
+
+    it 'saves each item' do
+      split_feed[:unsent_item].each do |i|
+        Item.find_by_link(i.link).wont_be_nil "item #{i.link} was not saved"
+      end
     end
 
   end
@@ -324,24 +376,14 @@ EOF
 
   end
 
-  class Configuration
-    def self.redefine_const(const, template)
-      remove_const(const)
-      const_set(const, template)
-    end
-  end
-
   describe '.template_bindings' do
 
     it 'returns template bindings' do
-      curr_base_uri = Configuration::BASE_URI
-      Configuration.redefine_const(:BASE_URI, base_uri)
       b = Send.send(:template_bindings, split_feed)
       b.eval('title').must_equal split_feed[:title]
       b.eval('unsent_items').must_equal split_feed[:unsent_item]
       b.eval('sent_items').must_equal split_feed[:sent_item]
       b.eval('unsubscribe_uri').must_equal "#{Configuration::BASE_URI}/subscribers/<%= recipient %>"
-      Configuration.redefine_const(:BASE_URI, curr_base_uri)
     end
 
   end
@@ -349,10 +391,7 @@ EOF
   describe '.compose_html' do
 
     it 'composes html message from split feed' do
-      curr_template = Configuration::HTML_TEMPLATE
-      Configuration.redefine_const(:HTML_TEMPLATE, html_template)
       Send.send(:compose_html, split_feed).must_equal html
-      Configuration.redefine_const(:HTML_TEMPLATE, curr_template)
     end
 
   end
@@ -360,10 +399,7 @@ EOF
   describe '.compose_plain' do
 
     it 'composes plain message from split feed' do
-      curr_template = Configuration::PLAIN_TEMPLATE
-      Configuration.redefine_const(:PLAIN_TEMPLATE, plain_template)
       Send.send(:compose_plain, split_feed).must_equal plain
-      Configuration.redefine_const(:PLAIN_TEMPLATE, curr_template)
     end
 
   end
@@ -371,11 +407,11 @@ EOF
   describe '.personalize' do
 
     it 'personalizes given html message for given recipient' do
-      Send.send(:personalize, html, recipient1).must_equal html_recipient1
+      Send.send(:personalize, html, subscriber1.email).must_equal html_subscriber1
     end
 
     it 'personalizes given plain message for given recipient' do
-      Send.send(:personalize, plain, recipient1).must_equal plain_recipient1
+      Send.send(:personalize, plain, subscriber1.email).must_equal plain_subscriber1
     end
 
   end
@@ -383,26 +419,17 @@ EOF
   describe '.send_out' do
 
     before do
-      @curr_from = Configuration::FROM
-      Configuration.redefine_const(:FROM, from)
-      @curr_subject = Configuration::SUBJECT
-      Configuration.redefine_const(:SUBJECT, subject)
       Mail.defaults { delivery_method :test }
       Mail::TestMailer.deliveries.clear
     end
 
-    after do
-      Configuration.redefine_const(:FROM, @curr_from)
-      Configuration.redefine_const(:FROM, @curr_subject)
-    end
-
     it 'sends out the message to given recipient' do
-      mail = Send.send(:send_out, feed[:title], html_recipient1, plain_recipient1, recipient1)
+      mail = Send.send(:send_out, feed[:title], html_subscriber1, plain_subscriber1, subscriber1.email)
       Mail::TestMailer.deliveries[0].must_equal mail
     end
 
     it 'applies the recipient' do
-      Send.send(:send_out, feed[:title], html_recipient1, plain_recipient1, recipient1)
+      Send.send(:send_out, feed[:title], html_subscriber1, plain_subscriber1, subscriber1.email)
       mail = Mail::TestMailer.deliveries[0]
       /From: ([^\r\n]+)/.match(mail.to_s)[1].must_equal Configuration::FROM
     end
@@ -411,21 +438,21 @@ EOF
       date = nil # supress unused variable warning
       date = Date.today.strftime('%a, %d %b %Y')
       expected = ERB.new(Configuration::SUBJECT).result(binding)
-      Send.send(:send_out, feed[:title], html_recipient1, plain_recipient1, recipient1)
+      Send.send(:send_out, feed[:title], html_subscriber1, plain_subscriber1, subscriber1.email)
       mail = Mail::TestMailer.deliveries[0]
       /Subject: ([^\r\n]+)/.match(mail.to_s)[1].must_equal expected
     end
 
     it 'includes the html part' do
-      Send.send(:send_out, feed[:title], html_recipient1, plain_recipient1, recipient1)
+      Send.send(:send_out, feed[:title], html_subscriber1, plain_subscriber1, subscriber1.email)
       mail = Mail::TestMailer.deliveries[0]
-      assert mail.to_s.index(html_recipient1.gsub(/\n/, "\r\n")) != nil, 'mail does not include html part'
+      assert mail.to_s.index(html_subscriber1.gsub(/\n/, "\r\n")) != nil, 'mail does not include html part'
     end
 
     it 'includes the plain part' do
-      Send.send(:send_out, feed[:title], html_recipient1, plain_recipient1, recipient1)
+      Send.send(:send_out, feed[:title], html_subscriber1, plain_subscriber1, subscriber1.email)
       mail = Mail::TestMailer.deliveries[0]
-      assert mail.to_s.index(plain_recipient1.gsub(/\n/, "\r\n")) != nil, 'mail does not include plain part'
+      assert mail.to_s.index(plain_subscriber1.gsub(/\n/, "\r\n")) != nil, 'mail does not include plain part'
     end
 
   end
