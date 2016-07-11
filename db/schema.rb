@@ -11,10 +11,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 1) do
+ActiveRecord::Schema.define(version: 2) do
+
+  create_table "items", force: :cascade do |t|
+    t.string   "title",       null: false
+    t.string   "description", null: false
+    t.string   "link",        null: false
+    t.datetime "pub_date"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+  end
+
+  add_index "items", ["link"], name: "index_items_on_link", unique: true
 
   create_table "subscribers", force: :cascade do |t|
-    t.string   "email"
+    t.string   "email",      null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

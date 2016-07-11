@@ -2,4 +2,8 @@
 
 require 'dependencies'
 
-Api.run!
+if ARGV.empty?
+  Api.run!
+elsif ARGV == ["send"]
+  Send.run!
+end

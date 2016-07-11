@@ -20,3 +20,15 @@ describe 'Command `correole`' do
   end
 
 end
+
+describe 'Command `correole send`' do
+
+  let(:root) { File.expand_path '../../../', __FILE__ }
+  let(:cmd) { "ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole send" }
+
+  it "send out emails" do
+    output = %x( #{cmd} )
+    output.must_equal "WIP: send out latest items\n"
+  end
+
+end
