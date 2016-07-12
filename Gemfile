@@ -8,5 +8,7 @@ gem 'pg', :group => :production
 gem 'sqlite3', :group => [ :test, :development ]
 gem 'minitest', '~> 5.8', :group => :test
 gem 'rack-test', '~> 0.6', :group => :test
+gem 'mini-smtp-server', '~> 0', :group => :test
+gem 'gserver', '~> 0', :group => :test
 gem 'pry', :group => :test
 gem 'rake'
