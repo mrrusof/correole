@@ -137,15 +137,15 @@ EOF
     <<-EOF
 <html>
   <body>
-    <a class="site-title" href="/"><%= title %></a>
-    <h1 class="page-heading">Items</h1>
-    <ul class="post-list">
+    <h1><%= title %></h1>
+    <h2>Items</h2>
+    <ul>
 <% for item in unsent_items %>
       <li>
-        <span class="post-meta"><%= item.pub_date.to_date %></span>
-        <h2>
-          <a class="post-link" href="<%= item.link %>"><%= item.title %></a>
-        </h2>
+        <i><%= item.pub_date.to_date %></i>
+        <h3>
+          <a href="<%= item.link %>"><%= item.title %></a>
+        </h3>
         <p><%= item.description %></p>
       </li>
 <% end %>
@@ -160,23 +160,23 @@ EOF
     <<-EOF
 <html>
   <body>
-    <a class="site-title" href="/">#{title}</a>
-    <h1 class="page-heading">Items</h1>
-    <ul class="post-list">
+    <h1>#{title}</h1>
+    <h2>Items</h2>
+    <ul>
 
       <li>
-        <span class="post-meta">#{item1.pub_date.to_date}</span>
-        <h2>
-          <a class="post-link" href="#{item1.link}">#{item1.title}</a>
-        </h2>
+        <i>#{item1.pub_date.to_date}</i>
+        <h3>
+          <a href="#{item1.link}">#{item1.title}</a>
+        </h3>
         <p>#{item1.description}</p>
       </li>
 
       <li>
-        <span class="post-meta">#{item2.pub_date.to_date}</span>
-        <h2>
-          <a class="post-link" href="#{item2.link}">#{item2.title}</a>
-        </h2>
+        <i>#{item2.pub_date.to_date}</i>
+        <h3>
+          <a href="#{item2.link}">#{item2.title}</a>
+        </h3>
         <p>#{item2.description}</p>
       </li>
 
@@ -191,23 +191,23 @@ EOF
     <<-EOF
 <html>
   <body>
-    <a class="site-title" href="/">#{title}</a>
-    <h1 class="page-heading">Items</h1>
-    <ul class="post-list">
+    <h1>#{title}</h1>
+    <h2>Items</h2>
+    <ul>
 
       <li>
-        <span class="post-meta">#{item1.pub_date.to_date}</span>
-        <h2>
-          <a class="post-link" href="#{item1.link}">#{item1.title}</a>
-        </h2>
+        <i>#{item1.pub_date.to_date}</i>
+        <h3>
+          <a href="#{item1.link}">#{item1.title}</a>
+        </h3>
         <p>#{item1.description}</p>
       </li>
 
       <li>
-        <span class="post-meta">#{item2.pub_date.to_date}</span>
-        <h2>
-          <a class="post-link" href="#{item2.link}">#{item2.title}</a>
-        </h2>
+        <i>#{item2.pub_date.to_date}</i>
+        <h3>
+          <a href="#{item2.link}">#{item2.title}</a>
+        </h3>
         <p>#{item2.description}</p>
       </li>
 
