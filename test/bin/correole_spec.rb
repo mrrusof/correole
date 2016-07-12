@@ -1,6 +1,4 @@
 require File.expand_path '../../test_helper.rb', __FILE__
-require 'thin'
-require 'mini-smtp-server'
 
 describe 'Command `correole`' do
 
@@ -106,15 +104,14 @@ end
 
 describe 'Command `correole send`' do
 
-  let(:root) { File.expand_path '../../../', __FILE__ }
-  let(:cmd) { "RACK_ENV=test ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole send" }
-  let(:config_file) { "#{root}/config/configuration.rb" }
-  let(:bak_file) { "#{root}/config/configuration.rb.bak" }
-  let(:http_port) { 9090 }
-  let(:smtp_port) { 9191 }
-  let(:timeout) { 10 }
   let(:quiet) { true }
   let(:recipient) { 'ruslan@localhost' }
+  let(:timeout) { 10 }
+  let(:http_port) { 9090 }
+  let(:smtp_port) { 9191 }
+  let(:feed_uri) { "http://localhost:#{http_port}/feed.xml" }
+  let(:root) { File.expand_path '../../../', __FILE__ }
+  let(:cmd) { "RACK_ENV=test FEED=#{feed_uri} SMTP_PORT=#{smtp_port} ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole send" }
 
   before do
     # Configure only one subscriber
@@ -122,35 +119,22 @@ describe 'Command `correole send`' do
     s = Subscriber.new(email: recipient)
     s.save
 
-    # Point program to fake feed and to smtp server
-    FileUtils.cp config_file, bak_file
-    config = File.read(config_file)
-    config.gsub!(/FEED = .+/, "FEED = 'http://localhost:#{http_port}/feed.xml'")
-    config = <<-EOF
-#{config}
-
-require 'mail'
-
-Mail.defaults do
-  delivery_method :smtp, address: 'localhost', port: #{smtp_port}
-end
-EOF
-    File.write(config_file, config)
-
     # Catch mail
     @smtp_server = SmtpServer.new(smtp_port, 'localhost', 1)
     @smtp_server.start
 
-    # Provide feed
-    FeedServer.set :port, http_port
-    @curr_stdout = $stdout
-    @curr_stderr = $stderr
+    # Go quiet
     if quiet
+      @curr_stdout = $stdout
+      @curr_stderr = $stderr
       $stdout = StringIO.new
       $stderr = StringIO.new
       Thin::Logging.silent = true
     end
-    Thread.new { FeedServer.run! }
+
+    # Provide feed
+    FeedServer.set :port, http_port
+    @http_server = Thread.new { FeedServer.run! }
     stop = Time.now.to_i + timeout
     while ! FeedServer.running? && Time.now.to_i < stop
       print '#'
@@ -160,14 +144,16 @@ EOF
 
   after do
     @smtp_server.stop
+    @smtp_server.join
 
     FeedServer.quit!
+    @http_server.join
 
-    $stdout = @curr_stdout
-    $stderr = @curr_stderr
-
-    # Restore configuration
-    FileUtils.mv bak_file, config_file
+    # Stop the silence
+    if quiet
+      $stdout = @curr_stdout
+      $stderr = @curr_stderr
+    end
   end
 
   it 'does not fail' do

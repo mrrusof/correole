@@ -1,9 +1,9 @@
 class Configuration
 
-  FEED = 'http://ruslanledesma.com/feed.xml'
-  BASE_URI = 'http://newsletter.ruslanledesma.com'
-  SUBJECT = '<%= title %> - <%= date %>'
-  FROM = 'no-reply <no-reply@ruslanledesma.com>'
+  FEED = ENV['FEED'] || 'http://ruslanledesma.com/feed.xml'
+  BASE_URI = ENV['BASE_URI'] || 'http://newsletter.ruslanledesma.com'
+  SUBJECT = ENV['SUBJECT'] || '<%= title %> - <%= date %>'
+  FROM = ENV['FROM'] || 'no-reply <no-reply@ruslanledesma.com>'
 
   HTML_TEMPLATE = <<-EOF
 <html>
@@ -17,4 +17,8 @@ EOF
 WIP: plain template
 EOF
 
+end
+
+Mail.defaults do
+  delivery_method :smtp, address: ENV['SMTP_SERVER'] || 'localhost', port: ENV['SMTP_PORT'] || 25
 end
