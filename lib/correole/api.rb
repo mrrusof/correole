@@ -1,7 +1,9 @@
 class Api < Sinatra::Base
 
-  ALLOWED_METHODS = 'PUT, DELETE, OPTIONS'
-  ALLOWED_ORIGIN = '*'
+  SUBSCRIBERS_ALLOWED_METHODS = 'PUT, DELETE, OPTIONS'
+  SUBSCRIBERS_ALLOWED_ORIGIN = '*'
+  UNSUBSCRIBE_ALLOWED_METHODS = 'GET, OPTIONS'
+  UNSUBSCRIBE_ALLOWED_ORIGIN = '*'
 
   set :server, :thin
   enable :logging
@@ -12,14 +14,8 @@ class Api < Sinatra::Base
     content_type 'text/plain'
   end
 
-  options '/subscribers/:email' do
-    response.headers['Access-Control-Allow-Methods'] = ALLOWED_METHODS
-    response.headers['Access-Control-Allow-Origin'] = ALLOWED_ORIGIN
-    200
-  end
-
-  put '/subscribers/:email' do
-    response.headers['Access-Control-Allow-Origin'] = ALLOWED_ORIGIN
+  def subscribe(params)
+    response.headers['Access-Control-Allow-Origin'] = SUBSCRIBERS_ALLOWED_ORIGIN
     s = Subscriber.new(email: params[:email])
     return 400 if not s.valid?
     begin
@@ -32,7 +28,10 @@ class Api < Sinatra::Base
     "#{params[:email]}\n"
   end
 
-  delete '/subscribers/:email' do
+  def unsubscribe(params)
+    response.headers['Access-Control-Allow-Origin'] = UNSUBSCRIBE_ALLOWED_ORIGIN
+    s = Subscriber.new(email: params[:email])
+    return 400 if not s.valid?
     s = Subscriber.find_by_email(params[:email])
     if s != nil
       s.delete
@@ -43,12 +42,57 @@ class Api < Sinatra::Base
     "#{params[:email]}\n"
   end
 
-  get '/subscribers/:email' do
+  def subscribers_method_not_allowed
+    response.headers['Access-Control-Allow-Methods'] = SUBSCRIBERS_ALLOWED_METHODS
     405
   end
 
-  post '/subscribers/:email' do
+  def unsubscribe_method_not_allowed
+    response.headers['Access-Control-Allow-Methods'] = UNSUBSCRIBE_ALLOWED_METHODS
     405
+  end
+
+  options '/subscribers/:email' do
+    response.headers['Access-Control-Allow-Methods'] = SUBSCRIBERS_ALLOWED_METHODS
+    response.headers['Access-Control-Allow-Origin'] = SUBSCRIBERS_ALLOWED_ORIGIN
+    200
+  end
+
+  put '/subscribers/:email' do
+    subscribe(params)
+  end
+
+  delete '/subscribers/:email' do
+    unsubscribe(params)
+  end
+
+  [ :get,
+    :post,
+    :patch
+  ].each do |verb|
+    send verb, '/subscribers/:email' do
+      subscribers_method_not_allowed
+    end
+  end
+
+  options '/unsubscribe/:email' do
+    response.headers['Access-Control-Allow-Methods'] = UNSUBSCRIBE_ALLOWED_METHODS
+    response.headers['Access-Control-Allow-Origin'] = UNSUBSCRIBE_ALLOWED_ORIGIN
+    200
+  end
+
+  get '/unsubscribe/:email' do
+    unsubscribe(params)
+  end
+
+  [ :put,
+    :delete,
+    :post,
+    :patch
+  ].each do |verb|
+    send verb, '/unsubscribe/:email' do
+      unsubscribe_method_not_allowed
+    end
   end
 
   not_found do

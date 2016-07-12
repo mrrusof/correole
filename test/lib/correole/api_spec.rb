@@ -6,31 +6,37 @@ end
 
 describe 'subscribers' do
 
-  describe 'options' do
+  [ ['/subscribers', 'PUT, DELETE, OPTIONS'],
+    ['/unsubscribe', 'GET, OPTIONS']
+  ].each do |c|
 
-    it 'allows subscriptions from other domains' do
-      email = "allow_other_domains_#{Time.now.to_i}@gmail.com"
-      options "/subscribers/#{email}"
-      assert last_response.ok?
-      last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
-    end
+    describe "options '#{c.first}/:email'" do
 
-    it 'allows methods PUT, DELETE, and OPTIONS' do
-      email = "allow_other_domains_#{Time.now.to_i}@gmail.com"
-      options "/subscribers/#{email}"
-      assert last_response.ok?
-      last_response.headers['Access-Control-Allow-Methods'].must_equal 'PUT, DELETE, OPTIONS'
+      it 'allows invocation from other domains' do
+        email = "allow_other_domains_#{Time.now.to_i}@gmail.com"
+        options "#{c.first}/#{email}"
+        assert last_response.ok?, 'response is not ok'
+        last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
+      end
+
+      it "allows methods #{c.second}" do
+        email = "allow_other_domains_#{Time.now.to_i}@gmail.com"
+        options "#{c.first}/#{email}"
+        assert last_response.ok?, 'response is not ok'
+        last_response.headers['Access-Control-Allow-Methods'].must_equal c.second
+      end
+
     end
 
   end
 
-  describe 'create' do
+  describe 'subscribe' do
 
     it 'returns the subscriber email' do
       email = "return_created_subscriber_email_#{Time.now.to_i}@gmail.com"
       put "/subscribers/#{email}"
-      assert last_response.ok?
-      assert_equal 'text/plain;charset=utf-8', last_response.content_type
+      assert last_response.ok?, 'response is not ok'
+      assert_equal 'text/plain;charset=utf-8', last_response.content_type, "content type is not plain text, utf-8"
       assert_equal "#{email}\n", last_response.body
     end
 
@@ -45,9 +51,9 @@ describe 'subscribers' do
     end
 
     it 'returns 400 if the email is not valid' do
-      email = "invalidemail_#{Time.now.to_i}.com"
+      email = "subscribe_invalidemail_#{Time.now.to_i}.com"
       put "/subscribers/#{email}"
-      assert last_response.bad_request?
+      assert last_response.bad_request?, 'response is not 400'
     end
 
     it 'is idempotent' do
@@ -83,9 +89,9 @@ describe 'subscribers' do
     end
 
     it 'allows subscriptions from other domains' do
-      email = "allow_other_domains_#{Time.now.to_i}@gmail.com"
+      email = "subscribe_allow_other_domains_#{Time.now.to_i}@gmail.com"
       put "/subscribers/#{email}"
-      assert last_response.ok?
+      assert last_response.ok?, 'response is not ok'
       last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
     end
 
@@ -93,49 +99,82 @@ describe 'subscribers' do
 
   describe 'delete' do
 
-    it 'returns the subscriber email' do
-      email = "return_deleted_subscriber_email_#{Time.now.to_i}@gmail.com"
-      s = Subscriber.new(email: email)
-      s.save
-      delete "/subscribers/#{email}"
-      assert last_response.ok?
-      assert_equal 'text/plain;charset=utf-8', last_response.content_type
-      assert_equal "#{email}\n", last_response.body
-    end
+    [ [:delete, '/subscribers'],
+      [:get, '/unsubscribe']
+    ].each do |c|
 
-    it 'deletes the subscriber from the database' do
-      email = "delete_subscriber_email_#{Time.now.to_i}@gmail.com"
-      s = Subscriber.new(email: email)
-      s.save
-      delete "/subscribers/#{email}"
-      s = Subscriber.find_by_email(email)
-      s.must_be_nil
-    end
+      describe "by method #{c.first}" do
 
-    it 'is idempotent' do
-      email = "idempotent_delete_#{Time.now.to_i}@gmail.com"
-      s = Subscriber.new(email: email)
-      s.save
-      delete "/subscribers/#{email}"
-      s = Subscriber.find_by_email(email)
-      s.must_be_nil
-      delete "/subscribers/#{email}"
-      s = Subscriber.find_by_email(email)
-      s.must_be_nil
+        it 'returns the subscriber email' do
+          email = "return_deleted_subscriber_email_#{Time.now.to_i}@gmail.com"
+          s = Subscriber.new(email: email)
+          s.save
+          send c.first, "#{c.second}/#{email}"
+          assert last_response.ok?, 'response is not ok'
+          assert_equal 'text/plain;charset=utf-8', last_response.content_type, "content type is not plain text, utf-8"
+          assert_equal "#{email}\n", last_response.body
+        end
+
+        it 'deletes the subscriber from the database' do
+          email = "delete_subscriber_email_#{Time.now.to_i}@gmail.com"
+          s = Subscriber.new(email: email)
+          s.save
+          send c.first, "#{c.second}/#{email}"
+          s = Subscriber.find_by_email(email)
+          s.must_be_nil
+        end
+
+        it 'returns 400 if the email is not valid' do
+          email = "delete_invalidemail_#{Time.now.to_i}.com"
+          send c.first, "#{c.second}/#{email}"
+          assert last_response.bad_request?, 'response is not 400'
+        end
+
+        it 'is idempotent' do
+          email = "idempotent_delete_#{Time.now.to_i}@gmail.com"
+          s = Subscriber.new(email: email)
+          s.save
+          send c.first, "#{c.second}/#{email}"
+          s = Subscriber.find_by_email(email)
+          s.must_be_nil
+          send c.first, "#{c.second}/#{email}"
+          s = Subscriber.find_by_email(email)
+          s.must_be_nil
+        end
+
+        it 'allows deletion from other domains' do
+          email = "delete_allow_other_domains_#{Time.now.to_i}@gmail.com"
+          send c.first, "#{c.second}/#{email}"
+          assert last_response.ok?, 'response is not ok'
+          last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
+        end
+
+      end
+
     end
 
   end
 
-  it 'does not allow getting a subscriber' do
-    get '/subscribers/some@mail.com'
-    assert last_response.method_not_allowed?, 'is getting a subscriber allowed?'
-    assert_equal "Method not allowed\n", last_response.body
-  end
+  describe 'methods not allowed' do
 
-  it 'does not allow posting a subscriber' do
-    post '/subscribers/some@mail.com'
-    assert last_response.method_not_allowed?, 'is posting a subscriber allowed?'
-    assert_equal "Method not allowed\n", last_response.body
+    [ [:get, '/subscribers'],
+      [:post, '/subscribers'],
+      [:patch, '/subscribers'],
+      [:put, '/unsubscribe'],
+      [:delete, '/unsubscribe'],
+      [:post, '/unsubscribe'],
+      [:patch, '/unsubscribe']
+    ].each do |c|
+
+      it "does not allow `#{c.first} '#{c.second}/some@mail.com'`" do
+        send c.first, "#{c.second}/some@mail.com"
+        assert last_response.method_not_allowed?, "does allow `#{c.first} '#{c.second}/some@mail.com'`"
+        assert_equal 'text/plain;charset=utf-8', last_response.content_type, "content type is not plain text, utf-8"
+        assert_equal "Method not allowed\n", last_response.body
+      end
+
+    end
+
   end
 
 end
@@ -146,11 +185,11 @@ class Api
   end
 end
 
-describe 'error messages' do
+describe 'error responses' do
 
   it 'returns "Not found" for 404' do
-    get '/hola'
-    assert last_response.not_found?, 'request is not "not found"'
+    get "/hola_#{Time.now.to_i}"
+    assert last_response.not_found?, 'response is not "not found"'
     assert_equal "Not found\n", last_response.body
   end
 
@@ -162,7 +201,7 @@ describe 'error messages' do
 
   it 'returns "Method not allowed" for 405' do
     post '/subscribers/some@mail.com'
-    assert last_response.method_not_allowed?, 'request does not execute a method not allowed'
+    assert last_response.method_not_allowed?, 'request does executes a method that is allowed'
     assert_equal "Method not allowed\n", last_response.body
   end
 
