@@ -17,12 +17,10 @@ describe 'Send' do
              link: "http://ruslanledesma.com/uri1_#{Time.now.to_i}",
              pub_date: Time.parse(item1_pub_date))
   }
-  let(:item2_pub_date) { 'Thu, 26 May 2016 00:00:00 +0000' }
   let(:item2) {
     Item.new(title: 'title2',
              description: 'description2',
-             link: "http://ruslanledesma.com/uri2_#{Time.now.to_i}",
-             pub_date: Time.parse(item2_pub_date))
+             link: "http://ruslanledesma.com/uri2_#{Time.now.to_i}")
   }
   let(:item3_pub_date) { 'Thu, 26 May 2016 00:00:00 +0000' }
   let(:item3) {
@@ -70,7 +68,6 @@ describe 'Send' do
       <item>
         <title>#{item2.title}</title>
         <description>#{item2.description}</description>
-        <pubDate>#{item2_pub_date}</pubDate>
         <link>#{item2.link}</link>
         <guid isPermaLink="true">#{item2.link}</guid>
       </item>
@@ -142,7 +139,9 @@ EOF
     <ul>
 <% for item in unsent_items %>
       <li>
+<% if item.pub_date -%>
         <i><%= item.pub_date.to_date %></i>
+<% end -%>
         <h3>
           <a href="<%= item.link %>"><%= item.title %></a>
         </h3>
@@ -173,7 +172,6 @@ EOF
       </li>
 
       <li>
-        <i>#{item2.pub_date.to_date}</i>
         <h3>
           <a href="#{item2.link}">#{item2.title}</a>
         </h3>
@@ -204,7 +202,6 @@ EOF
       </li>
 
       <li>
-        <i>#{item2.pub_date.to_date}</i>
         <h3>
           <a href="#{item2.link}">#{item2.title}</a>
         </h3>
@@ -225,7 +222,9 @@ EOF
 Items
 <% for item in unsent_items %>
 - <%= item.title %>
+<% if item.pub_date -%>
   <%= item.pub_date.to_date %>
+<% end -%>
   <%= item.link %>
 
   <%= item.description %>
@@ -246,7 +245,6 @@ Items
   #{item1.description}
 
 - #{item2.title}
-  #{item2.pub_date.to_date}
   #{item2.link}
 
   #{item2.description}
@@ -267,7 +265,6 @@ Items
   #{item1.description}
 
 - #{item2.title}
-  #{item2.pub_date.to_date}
   #{item2.link}
 
   #{item2.description}

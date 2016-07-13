@@ -62,13 +62,13 @@ class Send
   def self.compose_html(split_feed)
     template = Configuration::HTML_TEMPLATE
     bindings = template_bindings(split_feed)
-    return ERB.new(template).result(bindings)
+    return ERB.new(template, nil, '-').result(bindings)
   end
 
   def self.compose_plain(split_feed)
     template = Configuration::PLAIN_TEMPLATE
     bindings = template_bindings(split_feed)
-    return ERB.new(template).result(bindings)
+    return ERB.new(template, nil, '-').result(bindings)
   end
 
   def self.personalize(message, recipient)
