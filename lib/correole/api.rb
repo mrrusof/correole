@@ -20,9 +20,9 @@ class Api < Sinatra::Base
     return 400 if not s.valid?
     begin
       s.save
-      logger.info("Subscribed #{params[:email]}")
+      logger.info("Subscribed #{params[:email]}.")
     rescue ActiveRecord::RecordNotUnique
-      logger.info("Already subscribed #{params[:email]}")
+      logger.info("Already subscribed #{params[:email]}.")
       Subscriber.find_by_email(params[:email]).touch
     end
     "#{params[:email]}\n"
@@ -35,9 +35,9 @@ class Api < Sinatra::Base
     s = Subscriber.find_by_email(params[:email])
     if s != nil
       s.delete
-      logger.info("Unsubscribed #{params[:email]}")
+      logger.info("Unsubscribed #{params[:email]}.")
     else
-      logger.info("Already unsubscribed #{params[:email]}")
+      logger.info("Tried to unsubscribe #{params[:email]} but address is not subscribed.")
     end
     "#{params[:email]}\n"
   end
@@ -82,7 +82,10 @@ class Api < Sinatra::Base
   end
 
   get '/unsubscribe/:email' do
-    unsubscribe(params)
+    r = unsubscribe(params)
+    return r if r.is_a? Integer
+    response.headers['Location'] = Configuration::CONFIRMATION_URI
+    [302, r]
   end
 
   [ :put,

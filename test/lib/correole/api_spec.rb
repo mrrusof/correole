@@ -15,14 +15,14 @@ describe 'subscribers' do
       it 'allows invocation from other domains' do
         email = "allow_other_domains_#{Time.now.to_i}@gmail.com"
         options "#{c.first}/#{email}"
-        assert last_response.ok?, 'response is not ok'
+        last_response.status.must_equal 200, 'response is not ok'
         last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
       end
 
       it "allows methods #{c.second}" do
         email = "allow_other_domains_#{Time.now.to_i}@gmail.com"
         options "#{c.first}/#{email}"
-        assert last_response.ok?, 'response is not ok'
+        last_response.status.must_equal 200, 'response is not ok'
         last_response.headers['Access-Control-Allow-Methods'].must_equal c.second
       end
 
@@ -32,10 +32,10 @@ describe 'subscribers' do
 
   describe 'subscribe' do
 
-    it 'returns the subscriber email' do
+    it 'returns the subscriber email and responds ok' do
       email = "return_created_subscriber_email_#{Time.now.to_i}@gmail.com"
       put "/subscribers/#{email}"
-      assert last_response.ok?, 'response is not ok'
+      last_response.status.must_equal 200, 'response is not ok'
       assert_equal 'text/plain;charset=utf-8', last_response.content_type, "content type is not plain text, utf-8"
       assert_equal "#{email}\n", last_response.body
     end
@@ -91,7 +91,6 @@ describe 'subscribers' do
     it 'allows subscriptions from other domains' do
       email = "subscribe_allow_other_domains_#{Time.now.to_i}@gmail.com"
       put "/subscribers/#{email}"
-      assert last_response.ok?, 'response is not ok'
       last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
     end
 
@@ -103,14 +102,13 @@ describe 'subscribers' do
       [:get, '/unsubscribe']
     ].each do |c|
 
-      describe "by method #{c.first}" do
+      describe "by `#{c.first} '#{c.second}/:email'`" do
 
         it 'returns the subscriber email' do
           email = "return_deleted_subscriber_email_#{Time.now.to_i}@gmail.com"
           s = Subscriber.new(email: email)
           s.save
           send c.first, "#{c.second}/#{email}"
-          assert last_response.ok?, 'response is not ok'
           assert_equal 'text/plain;charset=utf-8', last_response.content_type, "content type is not plain text, utf-8"
           assert_equal "#{email}\n", last_response.body
         end
@@ -145,8 +143,26 @@ describe 'subscribers' do
         it 'allows deletion from other domains' do
           email = "delete_allow_other_domains_#{Time.now.to_i}@gmail.com"
           send c.first, "#{c.second}/#{email}"
-          assert last_response.ok?, 'response is not ok'
           last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
+        end
+
+        if c.first == :delete
+
+          it 'responds ok' do
+            email = "delete_response_ok_#{Time.now.to_i}@gmail.com"
+            send c.first, "#{c.second}/#{email}"
+            last_response.status.must_equal 200, 'response is not ok'
+          end
+
+        else
+
+          it 'redirects to confirmation page' do
+            email = "delete_redirect_confirmation_#{Time.now.to_i}@gmail.com"
+            send c.first, "#{c.second}/#{email}"
+            last_response.status.must_equal 302, "response is not a redirect"
+            last_response.headers['Location'].must_equal Configuration::CONFIRMATION_URI
+          end
+
         end
 
       end
