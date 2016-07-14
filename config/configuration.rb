@@ -7,8 +7,8 @@ class Configuration
   FEED = ENV['FEED'] || 'http://ruslanledesma.com/feed.xml'
   CONFIRMATION_URI = ENV['CONFIRMATION_URI'] || 'http://ruslanledesma.com/unsubscribed/'
   BASE_URI = ENV['BASE_URI'] || 'http://newsletter.ruslanledesma.com'
-  SUBJECT = ENV['SUBJECT'] || '<%= title %> - <%= date %>'
-  FROM = ENV['FROM'] || 'no-reply <no-reply@ruslanledesma.com>'
+  SUBJECT = ENV['SUBJECT'] || '<%= title %>: newsletter for <%= date %>'
+  FROM = ENV['FROM'] || '<%= title %> <no-reply@ruslanledesma.com>'
 
   HTML_TEMPLATE = <<-EOF
 <html>

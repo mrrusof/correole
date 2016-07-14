@@ -88,7 +88,7 @@ class Send
     date = Date.today.strftime('%a, %d %b %Y')
     Mail.deliver do
       to      recipient
-      from    Configuration::FROM
+      from    ERB.new(Configuration::FROM).result(binding)
       subject ERB.new(Configuration::SUBJECT).result(binding)
 
       text_part do

@@ -4,7 +4,7 @@ describe 'Send' do
 
   let(:base_uri) { 'http://test.ruslanledesma.com' }
   let(:subject) { 'Test <%= title %> - <%= date %>' }
-  let(:from) { 'no-reply <test@ruslanledesma.com>' }
+  let(:from) { '<%= title %> <no-reply@ruslanledesma.com>' }
 
   let(:subscriber1) { Subscriber.new(email: 'subscriber1@gmail.com') }
   let(:subscriber2) { Subscriber.new(email: 'subscriber2@gmail.com') }
@@ -440,18 +440,24 @@ EOF
       Mail::TestMailer.deliveries.clear
     end
 
-    it 'sends out the message to given recipient' do
+    it 'sends out the message' do
       mail = Send.send(:send_out, feed[:title], html_subscriber1, plain_subscriber1, subscriber1.email)
       Mail::TestMailer.deliveries[0].must_equal mail
     end
 
-    it 'applies the recipient' do
+    it 'applies title to the sender' do
       Send.send(:send_out, feed[:title], html_subscriber1, plain_subscriber1, subscriber1.email)
       mail = Mail::TestMailer.deliveries[0]
-      /From: ([^\r\n]+)/.match(mail.to_s)[1].must_equal Configuration::FROM
+      /From: ([^\r\n]+)/.match(mail.to_s)[1].must_equal ERB.new(Configuration::FROM).result(binding)
     end
 
-    it 'applies the subject' do
+    it 'addresses email to given recipient' do
+      Send.send(:send_out, feed[:title], html_subscriber1, plain_subscriber1, subscriber1.email)
+      mail = Mail::TestMailer.deliveries[0]
+      /To: ([^\r\n]+)/.match(mail.to_s)[1].must_equal subscriber1.email
+    end
+
+    it 'applies title and date to the subject' do
       date = nil # supress unused variable warning
       date = Date.today.strftime('%a, %d %b %Y')
       expected = ERB.new(Configuration::SUBJECT).result(binding)
