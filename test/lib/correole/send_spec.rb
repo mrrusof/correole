@@ -295,6 +295,8 @@ EOF
 
   describe '.run!' do
 
+    let(:quiet) { true }
+
     before do
       Mail.defaults { delivery_method :test }
       Mail::TestMailer.deliveries.clear
@@ -302,9 +304,23 @@ EOF
       subscriber1.save
       subscriber2.save
       Item.destroy_all
+      item1.save
       split_feed[:sent_item].each { |i| i.save }
+      if quiet
+        @curr_stdout = $stdout
+        @curr_stderr = $stderr
+        $stdout = StringIO.new
+        $stderr = StringIO.new
+      end
       Net::HTTP.stub :get, xml do
         Send.run!
+      end
+    end
+
+    after do
+      if quiet
+        $stdout = @curr_stdout
+        $stderr = @curr_stderr
       end
     end
 
@@ -323,7 +339,7 @@ EOF
 
     it 'sends each mail only to one recipient' do
       Mail::TestMailer.deliveries.each do |m|
-        m.to.length.must_equal 1, "newsletter was sent to more than one recipient"
+        m.to.length.must_equal 1, "newsletter was not sent only to one recipient"
       end
     end
 
@@ -332,6 +348,17 @@ EOF
         Item.find_by_link(i.link).wont_be_nil "item #{i.link} was not saved"
       end
     end
+
+    it 'does not send any email when you already sent all available items' do
+      Mail::TestMailer.deliveries.clear
+      Net::HTTP.stub :get, xml do
+        Send.run!
+      end
+      Mail::TestMailer.deliveries.each do |m|
+        m.to.length.must_equal 0, "newsletter was sent to some recipient"
+      end
+    end
+
 
   end
 

@@ -2,6 +2,10 @@ class Send
 
   def self.run!
     split_feed = split_items feed
+    if split_feed[:unsent_item].empty?
+      puts 'There are no unsent items, exiting.'
+      return
+    end
     html = compose_html split_feed
     plain = compose_plain split_feed
     Subscriber.find_each do |s|

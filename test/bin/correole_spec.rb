@@ -113,13 +113,20 @@ describe 'Command `correole send`' do
   let(:smtp_host) { 'localhost' }
   let(:feed_uri) { "http://#{http_host}:#{http_port}/feed.xml" }
   let(:root) { File.expand_path '../../../', __FILE__ }
-  let(:cmd) { "RACK_ENV=test FEED=#{feed_uri} SMTP_HOST=#{smtp_host} SMTP_PORT=#{smtp_port} ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole send" }
+  let(:cmd) {
+    cmd = "RACK_ENV=test FEED=#{feed_uri} SMTP_HOST=#{smtp_host} SMTP_PORT=#{smtp_port} ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole send"
+    cmd = "#{cmd} >/dev/null 2>&1" if quiet
+    cmd
+  }
 
   before do
     # Configure only one subscriber
     Subscriber.destroy_all
     s = Subscriber.new(email: recipient)
     s.save
+
+    # Forget everything we have sent
+    Item.destroy_all
 
     # Catch mail
     @smtp_server = SmtpServer.new(smtp_port, 'localhost', 1)
@@ -164,13 +171,20 @@ describe 'Command `correole send`' do
 
   it 'sends out only one email' do
     system(cmd)
-    @smtp_server.received.length.must_equal 1, 'did not send exactly one email'
+    @smtp_server.received.length.must_equal 1, 'did not send only one email'
   end
 
   it 'sends out email to recipient' do
     system(cmd)
     puts @smtp_server.received
     @smtp_server.received.first[:to].must_equal "<#{recipient}>", "recipient is not #{recipient}"
+  end
+
+  it 'does not send any email when you already sent all available items' do
+    system(cmd)
+    @smtp_server.received.clear
+    system(cmd)
+    @smtp_server.received.length.must_equal 0, 'newsletter was sent to some recipient'
   end
 
 end
