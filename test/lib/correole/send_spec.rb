@@ -308,9 +308,6 @@ EOF
       split_feed[:sent_item].each { |i| i.save }
       @curr_quiet = Configuration.quiet
       Configuration.quiet = quiet
-      Net::HTTP.stub :get, xml do
-        Send.run!
-      end
     end
 
     after do
@@ -318,40 +315,81 @@ EOF
     end
 
     it 'sends out the newsletter to all subscribers' do
+      Net::HTTP.stub :get, xml do
+        Send.run!
+      end
       Subscriber.find_each do |s|
         assert Mail::TestMailer.deliveries.any? { |m| m.to[0] == s.email }, "newsletter was not sent to subscriber #{s}"
       end
     end
 
     it 'sends out the newsletter only to subscribers' do
+      Net::HTTP.stub :get, xml do
+        Send.run!
+      end
       Subscriber.find_each do |s|
         Mail::TestMailer.deliveries.keep_if { |m| m.to[0] != s.email }
       end
-      Mail::TestMailer.deliveries.must_equal [], "newsletter was sent to unknown recipients"
+      Mail::TestMailer.deliveries.must_equal [], 'newsletter was sent to unknown recipients'
     end
 
     it 'sends each mail only to one recipient' do
+      Net::HTTP.stub :get, xml do
+        Send.run!
+      end
       Mail::TestMailer.deliveries.each do |m|
-        m.to.length.must_equal 1, "newsletter was not sent only to one recipient"
+        m.to.length.must_equal 1, 'newsletter was not sent to only one recipient'
       end
     end
 
     it 'saves each item' do
+      Net::HTTP.stub :get, xml do
+        Send.run!
+      end
       split_feed[:unsent_item].each do |i|
         Item.find_by_link(i.link).wont_be_nil "item #{i.link} was not saved"
       end
     end
 
     it 'does not send any email when you already sent all available items' do
+      Net::HTTP.stub :get, xml do
+        Send.run!
+      end
       Mail::TestMailer.deliveries.clear
       Net::HTTP.stub :get, xml do
         Send.run!
       end
       Mail::TestMailer.deliveries.each do |m|
-        m.to.length.must_equal 0, "newsletter was sent to some recipient"
+        m.to.length.must_equal 0, 'newsletter was sent to some recipient'
       end
     end
 
+    class SendOutExc < Send
+      class << self
+        attr_accessor :exception, :bad_recipient
+      end
+
+      def self.send_out(title, html, plain, recipient)
+        if recipient == @bad_recipient
+          @exception = true
+          msg = '550-Requested action not taken: mailbox unavailable'
+          raise Net::SMTPFatalError.new(msg)
+        end
+        return super.send_out(title, html, plain, recipient)
+      end
+    end
+
+    it 'does not stop when there is an exception in send_out' do
+      SendOutExc.exception = false
+      SendOutExc.bad_recipient = subscriber1.email
+      Net::HTTP.stub :get, xml do
+        SendOutExc.run!
+      end
+      assert SendOutExc.exception, 'there was no exception'
+      Mail::TestMailer.deliveries.each do |m|
+        m.to.length.must_equal 1, 'newsletter was not sent to only one recipient'
+      end
+    end
 
   end
 

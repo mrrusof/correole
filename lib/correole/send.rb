@@ -14,7 +14,12 @@ class Send
       html_s = personalize html, s.email
       plain_s = personalize plain, s.email
       qputs "[#{i+1}/#{count}] Send newsletter to #{s.email}."
-      send_out feed[:title], html_s, plain_s, s.email
+      begin
+        send_out feed[:title], html_s, plain_s, s.email
+      rescue => exc
+        qputs "Could not send newsletter to #{s.email} for the following reason."
+        qputs exc.message
+      end
     end
     split_feed[:unsent_item].each { |i| i.save }
     qputs 'Done.'
