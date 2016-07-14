@@ -4,6 +4,7 @@ require 'dependencies'
 
 if ARGV.empty?
   Api.run!
-elsif ARGV == ["send"]
+elsif ARGV.first == 'send'
+  Configuration::quiet = ARGV.second == '-q'
   Send.run!
 end

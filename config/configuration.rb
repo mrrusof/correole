@@ -1,5 +1,9 @@
 class Configuration
 
+  class << self
+    attr_accessor :quiet
+  end
+
   FEED = ENV['FEED'] || 'http://ruslanledesma.com/feed.xml'
   CONFIRMATION_URI = ENV['CONFIRMATION_URI'] || 'http://ruslanledesma.com/unsubscribed/'
   BASE_URI = ENV['BASE_URI'] || 'http://newsletter.ruslanledesma.com'

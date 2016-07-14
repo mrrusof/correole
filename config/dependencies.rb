@@ -1,5 +1,6 @@
 require 'sinatra/base'
 require 'sinatra/activerecord'
+require 'correole/qputs'
 require 'correole/subscriber'
 require 'correole/item'
 require 'correole/api'

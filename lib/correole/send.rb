@@ -1,19 +1,23 @@
 class Send
 
   def self.run!
+    qputs "Fetch feed from #{Configuration::FEED}."
     split_feed = split_items feed
     if split_feed[:unsent_item].empty?
-      puts 'There are no unsent items, exiting.'
+      qputs 'There are no unsent items, exiting.'
       return
     end
     html = compose_html split_feed
     plain = compose_plain split_feed
-    Subscriber.find_each do |s|
+    count = Subscriber.count
+    Subscriber.find_each.with_index do |s, i|
       html_s = personalize html, s.email
       plain_s = personalize plain, s.email
+      qputs "[#{i+1}/#{count}] Send newsletter to #{s.email}."
       send_out feed[:title], html_s, plain_s, s.email
     end
     split_feed[:unsent_item].each { |i| i.save }
+    qputs 'Done.'
   end
 
   private

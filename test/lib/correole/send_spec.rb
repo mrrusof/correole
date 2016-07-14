@@ -306,22 +306,15 @@ EOF
       Item.destroy_all
       item1.save
       split_feed[:sent_item].each { |i| i.save }
-      if quiet
-        @curr_stdout = $stdout
-        @curr_stderr = $stderr
-        $stdout = StringIO.new
-        $stderr = StringIO.new
-      end
+      @curr_quiet = Configuration.quiet
+      Configuration.quiet = quiet
       Net::HTTP.stub :get, xml do
         Send.run!
       end
     end
 
     after do
-      if quiet
-        $stdout = @curr_stdout
-        $stderr = @curr_stderr
-      end
+      Configuration.quiet = @curr_quiet
     end
 
     it 'sends out the newsletter to all subscribers' do

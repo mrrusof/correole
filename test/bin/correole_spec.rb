@@ -5,7 +5,12 @@ describe 'Command `correole`' do
   let(:port) { 5987 }
   let(:timeout) { 10 }
   let(:root) { File.expand_path '../../../', __FILE__ }
-  let(:cmd) { "PORT=#{port} ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole" }
+  let(:cmd) {
+    <<-EOF
+PORT=#{port} \
+bundle exec ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole
+EOF
+  }
 
   it "runs API" do
     spawn(cmd, [ :err, :out ] => '/dev/null')
@@ -114,9 +119,13 @@ describe 'Command `correole send`' do
   let(:feed_uri) { "http://#{http_host}:#{http_port}/feed.xml" }
   let(:root) { File.expand_path '../../../', __FILE__ }
   let(:cmd) {
-    cmd = "RACK_ENV=test FEED=#{feed_uri} SMTP_HOST=#{smtp_host} SMTP_PORT=#{smtp_port} ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole send"
-    cmd = "#{cmd} >/dev/null 2>&1" if quiet
-    cmd
+    <<-EOF
+RACK_ENV=test \
+FEED=#{feed_uri} \
+SMTP_HOST=#{smtp_host} \
+SMTP_PORT=#{smtp_port} \
+bundle exec ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole send #{quiet ? '-q' : ''}
+EOF
   }
 
   before do
