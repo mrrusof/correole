@@ -21,5 +21,11 @@ EOF
 end
 
 Mail.defaults do
-  delivery_method :smtp, address: ENV['SMTP_SERVER'] || 'localhost', port: ENV['SMTP_PORT'] || 25
+  delivery_method :smtp,
+    address:                ENV['SMTP_HOST'] || 'localhost',
+    port:                   ENV['SMTP_PORT'] || 25,
+    user_name:              ENV['SMTP_USER'],
+    password:               ENV['SMTP_PASS'],
+    authentication:         ENV['SMTP_AUTH'],
+    enable_starttls_auto:   ENV['SMTP_TTLS'] ? ENV['SMTP_TTLS'] == 'yes' : false
 end

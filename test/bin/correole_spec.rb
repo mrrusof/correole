@@ -108,10 +108,12 @@ describe 'Command `correole send`' do
   let(:recipient) { 'ruslan@localhost' }
   let(:timeout) { 10 }
   let(:http_port) { 9090 }
+  let(:http_host) { 'localhost' }
   let(:smtp_port) { 9191 }
-  let(:feed_uri) { "http://localhost:#{http_port}/feed.xml" }
+  let(:smtp_host) { 'localhost' }
+  let(:feed_uri) { "http://#{http_host}:#{http_port}/feed.xml" }
   let(:root) { File.expand_path '../../../', __FILE__ }
-  let(:cmd) { "RACK_ENV=test FEED=#{feed_uri} SMTP_PORT=#{smtp_port} ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole send" }
+  let(:cmd) { "RACK_ENV=test FEED=#{feed_uri} SMTP_HOST=#{smtp_host} SMTP_PORT=#{smtp_port} ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole send" }
 
   before do
     # Configure only one subscriber
