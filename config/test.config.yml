@@ -1,0 +1,15 @@
+test:
+  quiet: true
+  base_uri: http://test.ruslanledesma.com
+  feed: # set during test setup
+  confirmation_uri: http://newsletter.ruslanledesma.com
+  subject: 'Test <%= title %> - <%= date %>'
+  from: '<%= title %> <no-reply@ruslanledesma.com>'
+  html_template: test.html.erb
+  plain_template: test.txt.erb
+  smtp_host: # set during test setup
+  smtp_port: # set during test setup
+  smtp_user: # not tested
+  smtp_pass: # not tested
+  smtp_auth: # not tested
+  smtp_ttls: # not tested

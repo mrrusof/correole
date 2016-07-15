@@ -2,10 +2,6 @@ require File.expand_path '../../../test_helper.rb', __FILE__
 
 describe 'Send' do
 
-  let(:base_uri) { 'http://test.ruslanledesma.com' }
-  let(:subject) { 'Test <%= title %> - <%= date %>' }
-  let(:from) { '<%= title %> <no-reply@ruslanledesma.com>' }
-
   let(:subscriber1) { Subscriber.new(email: 'subscriber1@gmail.com') }
   let(:subscriber2) { Subscriber.new(email: 'subscriber2@gmail.com') }
 
@@ -130,31 +126,6 @@ EOF
       :sent_item => []
     }
   }
-  let(:html_template) {
-    <<-EOF
-<html>
-  <body>
-    <h1><%= title %></h1>
-    <h2>Items</h2>
-    <ul>
-<% for item in unsent_items %>
-      <li>
-<% if item.pub_date -%>
-        <i><%= item.pub_date.to_date %></i>
-<% end -%>
-        <h3>
-          <a href="<%= item.link %>"><%= item.title %></a>
-        </h3>
-        <p><%= item.description %></p>
-      </li>
-<% end %>
-    </ul>
-
-    <a href="<%= unsubscribe_uri %>">Unsubscribe here.</a>
-  </body>
-</html>
-EOF
-  }
   let(:html) {
     <<-EOF
 <html>
@@ -215,23 +186,6 @@ EOF
 </html>
 EOF
   }
-  let(:plain_template) {
-    <<-EOF
-<%= title %>
-
-Items
-<% for item in unsent_items %>
-- <%= item.title %>
-<% if item.pub_date -%>
-  <%= item.pub_date.to_date %>
-<% end -%>
-  <%= item.link %>
-
-  <%= item.description %>
-<% end %>
-Unsubscribe here: <%= unsubscribe_uri %>
-EOF
-  }
   let(:plain) {
     <<-EOF
 #{title}
@@ -273,29 +227,7 @@ Unsubscribe here: #{Configuration::BASE_URI}/subscribers/#{subscriber1.email}
 EOF
   }
 
-  class Configuration
-    def self.redefine_const(const, template)
-      remove_const(const)
-      const_set(const, template)
-    end
-  end
-
-  before do
-    @curr_base_uri = Configuration::BASE_URI
-    Configuration.redefine_const(:BASE_URI, base_uri)
-    @curr_subject = Configuration::SUBJECT
-    Configuration.redefine_const(:SUBJECT, subject)
-    @curr_from = Configuration::FROM
-    Configuration.redefine_const(:FROM, from)
-    @curr_html_template = Configuration::HTML_TEMPLATE
-    Configuration.redefine_const(:HTML_TEMPLATE, html_template)
-    @curr_plain_template = Configuration::PLAIN_TEMPLATE
-    Configuration.redefine_const(:PLAIN_TEMPLATE, plain_template)
-  end
-
   describe '.run!' do
-
-    let(:quiet) { true }
 
     before do
       Mail.defaults { delivery_method :test }
@@ -306,12 +238,6 @@ EOF
       Item.destroy_all
       item1.save
       split_feed[:sent_item].each { |i| i.save }
-      @curr_quiet = Configuration.quiet
-      Configuration.quiet = quiet
-    end
-
-    after do
-      Configuration.quiet = @curr_quiet
     end
 
     it 'sends out the newsletter to all subscribers' do

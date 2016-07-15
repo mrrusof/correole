@@ -109,7 +109,6 @@ end
 
 describe 'Command `correole send`' do
 
-  let(:quiet) { true }
   let(:recipient) { 'ruslan@localhost' }
   let(:timeout) { 10 }
   let(:http_port) { 9090 }
@@ -124,7 +123,7 @@ RACK_ENV=test \
 FEED=#{feed_uri} \
 SMTP_HOST=#{smtp_host} \
 SMTP_PORT=#{smtp_port} \
-bundle exec ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole send #{quiet ? '-q' : ''}
+bundle exec ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole send #{Configuration.quiet ? '-q' : ''}
 EOF
   }
 
@@ -142,7 +141,7 @@ EOF
     @smtp_server.start
 
     # Go quiet
-    if quiet
+    if Configuration.quiet
       @curr_stdout = $stdout
       @curr_stderr = $stderr
       $stdout = StringIO.new
@@ -168,7 +167,7 @@ EOF
     @http_server.join
 
     # Stop the silence
-    if quiet
+    if Configuration.quiet
       $stdout = @curr_stdout
       $stderr = @curr_stderr
     end

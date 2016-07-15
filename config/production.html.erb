@@ -1,0 +1,21 @@
+<html>
+  <body>
+    <h1><%= title %></h1>
+    <h2>New posts</h2>
+    <ul>
+<% for item in unsent_items %>
+      <li>
+        <h3>
+          <a href="<%= item.link %>"><%= item.title %></a>
+        </h3>
+<% if item.pub_date -%>
+        <p><i><%= item.pub_date.to_date %></i></p>
+<% end -%>
+        <p><%= item.description %></p>
+      </li>
+<% end %>
+    </ul>
+
+    <a href="<%= unsubscribe_uri %>">Unsubscribe here.</a>
+  </body>
+</html>

@@ -1,0 +1,18 @@
+production: &prod
+  quiet: false
+  base_uri: http://ruslanledesma.com/unsubscribed/
+  feed: http://ruslanledesma.com/feed.xml
+  confirmation_uri: http://newsletter.ruslanledesma.com
+  subject: '<%= title %>: newsletter for <%= date %>'
+  from: '<%= title %> <no-reply@ruslanledesma.com>'
+  html_template: production.html.erb
+  plain_template: production.txt.erb
+  smtp_host:
+  smtp_port:
+  smtp_user:
+  smtp_pass:
+  smtp_auth:
+  smtp_ttls:
+
+development:
+  <<: *prod

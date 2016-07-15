@@ -1,0 +1,13 @@
+<%= title %>
+
+Items
+<% for item in unsent_items %>
+- <%= item.title %>
+<% if item.pub_date -%>
+  <%= item.pub_date.to_date %>
+<% end -%>
+  <%= item.link %>
+
+  <%= item.description %>
+<% end %>
+Unsubscribe here: <%= unsubscribe_uri %>
