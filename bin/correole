@@ -4,7 +4,15 @@ require 'dependencies'
 
 if ARGV.empty?
   Api.run!
-elsif ARGV.first == 'send'
-  Configuration::quiet = ARGV.second == '-q'
+end
+
+Configuration::quiet = ARGV.second == '-q'
+
+case ARGV.first
+when 'send'
   Send.run!
+when 'purge'
+  Purge.run!
+else
+  abort "Unknown parameters #{ARGV}."
 end

@@ -107,7 +107,7 @@ class SmtpServer < MiniSmtpServer
   end
 end
 
-describe 'Command `correole send`' do
+describe 'Submission of newsletter' do
 
   let(:recipient) { 'ruslan@localhost' }
   let(:timeout) { 10 }
@@ -117,13 +117,22 @@ describe 'Command `correole send`' do
   let(:smtp_host) { 'localhost' }
   let(:feed_uri) { "http://#{http_host}:#{http_port}/feed.xml" }
   let(:root) { File.expand_path '../../../', __FILE__ }
-  let(:cmd) {
+  let(:cmd_send) {
     <<-EOF
 RACK_ENV=test \
 FEED=#{feed_uri} \
 SMTP_HOST=#{smtp_host} \
 SMTP_PORT=#{smtp_port} \
 bundle exec ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole send #{Configuration.quiet ? '-q' : ''}
+EOF
+  }
+  let(:cmd_purge) {
+    <<-EOF
+RACK_ENV=test \
+FEED=#{feed_uri} \
+SMTP_HOST=#{smtp_host} \
+SMTP_PORT=#{smtp_port} \
+bundle exec ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole purge #{Configuration.quiet ? '-q' : ''}
 EOF
   }
 
@@ -173,26 +182,45 @@ EOF
     end
   end
 
-  it 'does not fail' do
-    assert system(cmd), "command `#{cmd}` fails"
+  describe 'Command `correole send`' do
+
+    it 'does not fail' do
+      assert system(cmd_send), "command `#{cmd_send}` fails"
+    end
+
+    it 'sends out only one email' do
+      system(cmd_send)
+      @smtp_server.received.length.must_equal 1, 'did not send only one email'
+    end
+
+    it 'sends out email to recipient' do
+      system(cmd_send)
+      puts @smtp_server.received
+      @smtp_server.received.first[:to].must_equal "<#{recipient}>", "recipient is not #{recipient}"
+    end
+
+    it 'does not send any email when you already sent all available items' do
+      system(cmd_send)
+      @smtp_server.received.clear
+      system(cmd_send)
+      @smtp_server.received.length.must_equal 0, 'newsletter was sent to some recipient'
+    end
+
   end
 
-  it 'sends out only one email' do
-    system(cmd)
-    @smtp_server.received.length.must_equal 1, 'did not send only one email'
-  end
+  describe 'Command `correole purge`' do
 
-  it 'sends out email to recipient' do
-    system(cmd)
-    puts @smtp_server.received
-    @smtp_server.received.first[:to].must_equal "<#{recipient}>", "recipient is not #{recipient}"
-  end
+    it 'does not fail' do
+      assert system(cmd_purge), "command `#{cmd_purge}` fails"
+    end
 
-  it 'does not send any email when you already sent all available items' do
-    system(cmd)
-    @smtp_server.received.clear
-    system(cmd)
-    @smtp_server.received.length.must_equal 0, 'newsletter was sent to some recipient'
+    it 'remembers new items so that later `correole send` does not send any email' do
+      system(cmd_purge)
+      @smtp_server.received.clear
+      system(cmd_send)
+      @smtp_server.received.length.must_equal 0, 'newsletter was sent to some recipient'
+    end
+
   end
 
 end

@@ -98,32 +98,11 @@ describe 'Send' do
 </rss>
 EOF
   }
-  let(:feed) {
-    {
-      :title => title,
-      :item =>
-      [ item1, item2, item3, item4, item5, item6 ]
-    }
-  }
   let(:split_feed) {
     {
       :title => title,
       :unsent_item => [ item1, item2 ],
       :sent_item => [ item3, item4, item5, item6 ]
-    }
-  }
-  let(:split_feed_all_sent) {
-    {
-      :title => title,
-      :unsent_item => [],
-      :sent_item => [ item1, item2, item3, item4, item5, item6 ]
-    }
-  }
-  let(:split_feed_none_sent) {
-    {
-      :title => title,
-      :unsent_item => [ item1, item2, item3, item4, item5, item6 ],
-      :sent_item => []
     }
   }
   let(:html) {
@@ -236,7 +215,6 @@ EOF
       subscriber1.save
       subscriber2.save
       Item.destroy_all
-      item1.save
       split_feed[:sent_item].each { |i| i.save }
     end
 
@@ -245,7 +223,7 @@ EOF
         Send.run!
       end
       Subscriber.find_each do |s|
-        assert Mail::TestMailer.deliveries.any? { |m| m.to[0] == s.email }, "newsletter was not sent to subscriber #{s}"
+        assert Mail::TestMailer.deliveries.any? { |m| m.to[0] == s.email }, "newsletter was not sent to subscriber #{s.email}"
       end
     end
 
@@ -268,7 +246,7 @@ EOF
       end
     end
 
-    it 'saves each item' do
+    it 'remembers each unsent item' do
       Net::HTTP.stub :get, xml do
         Send.run!
       end
@@ -315,44 +293,6 @@ EOF
       Mail::TestMailer.deliveries.each do |m|
         m.to.length.must_equal 1, 'newsletter was not sent to only one recipient'
       end
-    end
-
-  end
-
-  describe '.feed' do
-
-    it 'returns a hash' do
-      Net::HTTP.stub :get, xml do
-        assert Send.send(:feed).is_a?(Hash), 'return value is not a hash'
-      end
-    end
-
-    it 'projects the feed' do
-      Net::HTTP.stub :get, xml do
-        Send.send(:feed).must_equal feed
-      end
-    end
-
-  end
-
-  describe '.split_items' do
-
-    it 'splits list of items into sent and unsent' do
-      Item.destroy_all
-      split_feed[:sent_item].each { |i| i.save }
-      actual = Send.send(:split_items, feed)
-      actual[:unsent_item].sort.must_equal split_feed[:unsent_item].sort
-    end
-
-    it 'declares all items unsent when there are no sent items' do
-      Item.destroy_all
-      Send.send(:split_items, feed).must_equal split_feed_none_sent
-    end
-
-    it 'declares all items sent when all items have been sent' do
-      Item.destroy_all
-      feed[:item].each { |i| i.save }
-      Send.send(:split_items, feed).must_equal split_feed_all_sent
     end
 
   end
@@ -405,18 +345,18 @@ EOF
     end
 
     it 'sends out the message' do
-      mail = Send.send(:send_out, feed[:title], html_subscriber1, plain_subscriber1, subscriber1.email)
+      mail = Send.send(:send_out, title, html_subscriber1, plain_subscriber1, subscriber1.email)
       Mail::TestMailer.deliveries[0].must_equal mail
     end
 
     it 'applies title to the sender' do
-      Send.send(:send_out, feed[:title], html_subscriber1, plain_subscriber1, subscriber1.email)
+      Send.send(:send_out, title, html_subscriber1, plain_subscriber1, subscriber1.email)
       mail = Mail::TestMailer.deliveries[0]
       /From: ([^\r\n]+)/.match(mail.to_s)[1].must_equal ERB.new(Configuration::FROM).result(binding)
     end
 
     it 'addresses email to given recipient' do
-      Send.send(:send_out, feed[:title], html_subscriber1, plain_subscriber1, subscriber1.email)
+      Send.send(:send_out, title, html_subscriber1, plain_subscriber1, subscriber1.email)
       mail = Mail::TestMailer.deliveries[0]
       /To: ([^\r\n]+)/.match(mail.to_s)[1].must_equal subscriber1.email
     end
@@ -425,19 +365,19 @@ EOF
       date = nil # supress unused variable warning
       date = Date.today.strftime('%a, %d %b %Y')
       expected = ERB.new(Configuration::SUBJECT).result(binding)
-      Send.send(:send_out, feed[:title], html_subscriber1, plain_subscriber1, subscriber1.email)
+      Send.send(:send_out, title, html_subscriber1, plain_subscriber1, subscriber1.email)
       mail = Mail::TestMailer.deliveries[0]
       /Subject: ([^\r\n]+)/.match(mail.to_s)[1].must_equal expected
     end
 
     it 'includes the html part' do
-      Send.send(:send_out, feed[:title], html_subscriber1, plain_subscriber1, subscriber1.email)
+      Send.send(:send_out, title, html_subscriber1, plain_subscriber1, subscriber1.email)
       mail = Mail::TestMailer.deliveries[0]
       assert mail.to_s.index(html_subscriber1.gsub(/\n/, "\r\n")) != nil, 'mail does not include html part'
     end
 
     it 'includes the plain part' do
-      Send.send(:send_out, feed[:title], html_subscriber1, plain_subscriber1, subscriber1.email)
+      Send.send(:send_out, title, html_subscriber1, plain_subscriber1, subscriber1.email)
       mail = Mail::TestMailer.deliveries[0]
       assert mail.to_s.index(plain_subscriber1.gsub(/\n/, "\r\n")) != nil, 'mail does not include plain part'
     end
