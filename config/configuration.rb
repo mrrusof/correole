@@ -2,12 +2,7 @@ ENV['RACK_ENV'] ||= 'production'
 ENV['CONFIG_FILE'] ||= 'config.yml'
 config_file = File.expand_path "../#{ENV['CONFIG_FILE']}", __FILE__
 YAML.load_file(config_file)[ENV['RACK_ENV']].each_pair do |k,v|
-  case k
-  when 'html_template', 'plain_template'
-    ENV[k.upcase] ||= File.expand_path "../#{v.to_s}", __FILE__
-  else
-    ENV[k.upcase] ||= v.to_s
-  end rescue abort "Cannot load configuration key #{k}."
+  ENV[k.upcase] ||= v.to_s rescue abort "Cannot load configuration key #{k}."
 end rescue puts "Could not load configuration file #{config_file}."
 
 class Configuration
@@ -22,8 +17,10 @@ class Configuration
   BASE_URI = ENV['BASE_URI']
   SUBJECT = ENV['SUBJECT']
   FROM = ENV['FROM']
-  HTML_TEMPLATE = File.read ENV['HTML_TEMPLATE'] rescue abort "Cannot load html template #{ENV['HTML_TEMPLATE']}."
-  PLAIN_TEMPLATE = File.read ENV['PLAIN_TEMPLATE'] rescue abort "Cannot load plain template #{ENV['PLAIN_TEMPLATE']}."
+  file = File.expand_path "../#{ENV['HTML_TEMPLATE']}", __FILE__
+  HTML_TEMPLATE = File.read file rescue abort "Cannot load html template #{ENV['HTML_TEMPLATE']}."
+  file = File.expand_path "../#{ENV['PLAIN_TEMPLATE']}", __FILE__
+  PLAIN_TEMPLATE = File.read file rescue abort "Cannot load plain template #{ENV['PLAIN_TEMPLATE']}."
 end
 
 Mail.defaults do
