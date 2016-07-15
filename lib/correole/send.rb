@@ -4,9 +4,11 @@ class Send
     qputs "Fetch feed from #{Configuration::FEED}."
     split_feed = split_items feed
     if split_feed[:unsent_item].empty?
-      qputs 'There are no unsent items, exiting.'
+      qputs 'There are no new items, exiting.'
       return
     end
+    qputs "There are #{split_feed[:unsent_item].length} new items. The items are the following."
+    split_feed[:unsent_item].each_with_index { |i, j| qputs "[#{j}] #{i.link}" }
     html = compose_html split_feed
     plain = compose_plain split_feed
     count = Subscriber.count
@@ -21,6 +23,7 @@ class Send
         qputs exc.message
       end
     end
+    qputs 'Remember new items.'
     split_feed[:unsent_item].each { |i| i.save }
     qputs 'Done.'
   end
