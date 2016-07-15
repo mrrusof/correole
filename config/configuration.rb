@@ -8,7 +8,7 @@ YAML.load_file(config_file)[ENV['RACK_ENV']].each_pair do |k,v|
   else
     ENV[k.upcase] ||= v.to_s
   end rescue abort "Cannot load configuration key #{k}."
-end
+end rescue puts "Could not load configuration file #{config_file}."
 
 class Configuration
 
