@@ -1,5 +1,6 @@
 class Api < Sinatra::Base
 
+  UNSUBSCRIBE_PATH = '/unsubscribe'
   SUBSCRIBERS_ALLOWED_METHODS = 'PUT, DELETE, OPTIONS'
   SUBSCRIBERS_ALLOWED_ORIGIN = '*'
   UNSUBSCRIBE_ALLOWED_METHODS = 'GET, OPTIONS'
@@ -75,13 +76,13 @@ class Api < Sinatra::Base
     end
   end
 
-  options '/unsubscribe/:email' do
+  options "#{UNSUBSCRIBE_PATH}/:email" do
     response.headers['Access-Control-Allow-Methods'] = UNSUBSCRIBE_ALLOWED_METHODS
     response.headers['Access-Control-Allow-Origin'] = UNSUBSCRIBE_ALLOWED_ORIGIN
     200
   end
 
-  get '/unsubscribe/:email' do
+  get "#{UNSUBSCRIBE_PATH}/:email" do
     r = unsubscribe(params)
     return r if r.is_a? Integer
     response.headers['Location'] = Configuration::CONFIRMATION_URI
@@ -93,7 +94,7 @@ class Api < Sinatra::Base
     :post,
     :patch
   ].each do |verb|
-    send verb, '/unsubscribe/:email' do
+    send verb, "#{UNSUBSCRIBE_PATH}/:email" do
       unsubscribe_method_not_allowed
     end
   end

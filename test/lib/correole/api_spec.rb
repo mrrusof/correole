@@ -7,7 +7,7 @@ end
 describe 'subscribers' do
 
   [ ['/subscribers', 'PUT, DELETE, OPTIONS'],
-    ['/unsubscribe', 'GET, OPTIONS']
+    [Api::UNSUBSCRIBE_PATH, 'GET, OPTIONS']
   ].each do |c|
 
     describe "options '#{c.first}/:email'" do
@@ -99,7 +99,7 @@ describe 'subscribers' do
   describe 'delete' do
 
     [ [:delete, '/subscribers'],
-      [:get, '/unsubscribe']
+      [:get, Api::UNSUBSCRIBE_PATH]
     ].each do |c|
 
       describe "by `#{c.first} '#{c.second}/:email'`" do
@@ -176,10 +176,10 @@ describe 'subscribers' do
     [ [:get, '/subscribers'],
       [:post, '/subscribers'],
       [:patch, '/subscribers'],
-      [:put, '/unsubscribe'],
-      [:delete, '/unsubscribe'],
-      [:post, '/unsubscribe'],
-      [:patch, '/unsubscribe']
+      [:put, Api::UNSUBSCRIBE_PATH],
+      [:delete, Api::UNSUBSCRIBE_PATH],
+      [:post, Api::UNSUBSCRIBE_PATH],
+      [:patch, Api::UNSUBSCRIBE_PATH]
     ].each do |c|
 
       it "does not allow `#{c.first} '#{c.second}/some@mail.com'`" do

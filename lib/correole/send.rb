@@ -36,7 +36,7 @@ class Send
     unsent_items = split_feed[:unsent_item]
     sent_items = split_feed[:sent_item]
     unsubscribe_uri = nil # supress unused variable warning
-    unsubscribe_uri = "#{Configuration::BASE_URI}/subscribers/<%= recipient %>"
+    unsubscribe_uri = "#{Configuration::BASE_URI}/unsubscribe/<%= recipient %>"
     title = '' if !title.is_a?(String)
     unsent_items = [] if !unsent_items.is_a?(Array)
     sent_items = [] if !unsent_items.is_a?(Array)

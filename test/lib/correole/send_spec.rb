@@ -130,7 +130,7 @@ EOF
 
     </ul>
 
-    <a href="#{Configuration::BASE_URI}/subscribers/<%= recipient %>">Unsubscribe here.</a>
+    <a href="#{Configuration::BASE_URI}#{Api::UNSUBSCRIBE_PATH}/<%= recipient %>">Unsubscribe here.</a>
   </body>
 </html>
 EOF
@@ -160,7 +160,7 @@ EOF
 
     </ul>
 
-    <a href="#{Configuration::BASE_URI}/subscribers/#{subscriber1.email}">Unsubscribe here.</a>
+    <a href="#{Configuration::BASE_URI}#{Api::UNSUBSCRIBE_PATH}/#{subscriber1.email}">Unsubscribe here.</a>
   </body>
 </html>
 EOF
@@ -182,7 +182,7 @@ Items
 
   #{item2.description}
 
-Unsubscribe here: #{Configuration::BASE_URI}/subscribers/<%= recipient %>
+Unsubscribe here: #{Configuration::BASE_URI}#{Api::UNSUBSCRIBE_PATH}/<%= recipient %>
 EOF
   }
   let(:plain_subscriber1) {
@@ -202,7 +202,7 @@ Items
 
   #{item2.description}
 
-Unsubscribe here: #{Configuration::BASE_URI}/subscribers/#{subscriber1.email}
+Unsubscribe here: #{Configuration::BASE_URI}#{Api::UNSUBSCRIBE_PATH}/#{subscriber1.email}
 EOF
   }
 
@@ -304,7 +304,7 @@ EOF
       b.eval('title').must_equal split_feed[:title]
       b.eval('unsent_items').must_equal split_feed[:unsent_item]
       b.eval('sent_items').must_equal split_feed[:sent_item]
-      b.eval('unsubscribe_uri').must_equal "#{Configuration::BASE_URI}/subscribers/<%= recipient %>"
+      b.eval('unsubscribe_uri').must_equal "#{Configuration::BASE_URI}#{Api::UNSUBSCRIBE_PATH}/<%= recipient %>"
     end
 
   end
