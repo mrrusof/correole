@@ -1,7 +1,7 @@
 class Feed
 
   def self.get
-    uri = URI Configuration::FEED
+    uri = URI Configuration.feed
     xml = Net::HTTP.get uri
     hash = Hash.from_xml xml
     return {

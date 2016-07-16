@@ -1,7 +1,7 @@
 class Send
 
   def self.run!
-    qputs "Fetch feed from #{Configuration::FEED}."
+    qputs "Fetch feed from #{Configuration.feed}."
     feed = Feed.get
     split_feed = Feed.split_items feed
     if split_feed[:unsent_item].empty?
@@ -36,7 +36,7 @@ class Send
     unsent_items = split_feed[:unsent_item]
     sent_items = split_feed[:sent_item]
     unsubscribe_uri = nil # supress unused variable warning
-    unsubscribe_uri = "#{Configuration::BASE_URI}/unsubscribe/<%= recipient %>"
+    unsubscribe_uri = "#{Configuration.base_uri}/unsubscribe/<%= recipient %>"
     title = '' if !title.is_a?(String)
     unsent_items = [] if !unsent_items.is_a?(Array)
     sent_items = [] if !unsent_items.is_a?(Array)
@@ -44,13 +44,13 @@ class Send
   end
 
   def self.compose_html(split_feed)
-    template = Configuration::HTML_TEMPLATE
+    template = Configuration.html_template
     bindings = template_bindings(split_feed)
     return ERB.new(template, nil, '-').result(bindings)
   end
 
   def self.compose_plain(split_feed)
-    template = Configuration::PLAIN_TEMPLATE
+    template = Configuration.plain_template
     bindings = template_bindings(split_feed)
     return ERB.new(template, nil, '-').result(bindings)
   end
@@ -64,8 +64,8 @@ class Send
     date = Date.today.strftime('%a, %d %b %Y')
     Mail.deliver do
       to      recipient
-      from    ERB.new(Configuration::FROM).result(binding)
-      subject ERB.new(Configuration::SUBJECT).result(binding)
+      from    ERB.new(Configuration.from).result(binding)
+      subject ERB.new(Configuration.subject).result(binding)
 
       text_part do
         body plain

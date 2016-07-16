@@ -130,7 +130,7 @@ EOF
 
     </ul>
 
-    <a href="#{Configuration::BASE_URI}#{Api::UNSUBSCRIBE_PATH}/<%= recipient %>">Unsubscribe here.</a>
+    <a href="#{Configuration.base_uri}#{Api::UNSUBSCRIBE_PATH}/<%= recipient %>">Unsubscribe here.</a>
   </body>
 </html>
 EOF
@@ -160,7 +160,7 @@ EOF
 
     </ul>
 
-    <a href="#{Configuration::BASE_URI}#{Api::UNSUBSCRIBE_PATH}/#{subscriber1.email}">Unsubscribe here.</a>
+    <a href="#{Configuration.base_uri}#{Api::UNSUBSCRIBE_PATH}/#{subscriber1.email}">Unsubscribe here.</a>
   </body>
 </html>
 EOF
@@ -182,7 +182,7 @@ Items
 
   #{item2.description}
 
-Unsubscribe here: #{Configuration::BASE_URI}#{Api::UNSUBSCRIBE_PATH}/<%= recipient %>
+Unsubscribe here: #{Configuration.base_uri}#{Api::UNSUBSCRIBE_PATH}/<%= recipient %>
 EOF
   }
   let(:plain_subscriber1) {
@@ -202,7 +202,7 @@ Items
 
   #{item2.description}
 
-Unsubscribe here: #{Configuration::BASE_URI}#{Api::UNSUBSCRIBE_PATH}/#{subscriber1.email}
+Unsubscribe here: #{Configuration.base_uri}#{Api::UNSUBSCRIBE_PATH}/#{subscriber1.email}
 EOF
   }
 
@@ -304,7 +304,7 @@ EOF
       b.eval('title').must_equal split_feed[:title]
       b.eval('unsent_items').must_equal split_feed[:unsent_item]
       b.eval('sent_items').must_equal split_feed[:sent_item]
-      b.eval('unsubscribe_uri').must_equal "#{Configuration::BASE_URI}#{Api::UNSUBSCRIBE_PATH}/<%= recipient %>"
+      b.eval('unsubscribe_uri').must_equal "#{Configuration.base_uri}#{Api::UNSUBSCRIBE_PATH}/<%= recipient %>"
     end
 
   end
@@ -352,7 +352,7 @@ EOF
     it 'applies title to the sender' do
       Send.send(:send_out, title, html_subscriber1, plain_subscriber1, subscriber1.email)
       mail = Mail::TestMailer.deliveries[0]
-      /From: ([^\r\n]+)/.match(mail.to_s)[1].must_equal ERB.new(Configuration::FROM).result(binding)
+      /From: ([^\r\n]+)/.match(mail.to_s)[1].must_equal ERB.new(Configuration.from).result(binding)
     end
 
     it 'addresses email to given recipient' do
@@ -364,7 +364,7 @@ EOF
     it 'applies title and date to the subject' do
       date = nil # supress unused variable warning
       date = Date.today.strftime('%a, %d %b %Y')
-      expected = ERB.new(Configuration::SUBJECT).result(binding)
+      expected = ERB.new(Configuration.subject).result(binding)
       Send.send(:send_out, title, html_subscriber1, plain_subscriber1, subscriber1.email)
       mail = Mail::TestMailer.deliveries[0]
       /Subject: ([^\r\n]+)/.match(mail.to_s)[1].must_equal expected

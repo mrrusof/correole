@@ -85,7 +85,7 @@ class Api < Sinatra::Base
   get "#{UNSUBSCRIBE_PATH}/:email" do
     r = unsubscribe(params)
     return r if r.is_a? Integer
-    response.headers['Location'] = Configuration::CONFIRMATION_URI
+    response.headers['Location'] = Configuration.confirmation_uri
     [302, r]
   end
 

@@ -6,7 +6,7 @@ if ARGV.empty?
   Api.run!
 end
 
-Configuration::quiet = ARGV.second == '-q'
+Configuration.quiet = ARGV.second == '-q'
 
 case ARGV.first
 when 'send'

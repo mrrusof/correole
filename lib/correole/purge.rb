@@ -1,7 +1,7 @@
 class Purge
 
   def self.run!
-    qputs "Fetch feed from #{Configuration::FEED}."
+    qputs "Fetch feed from #{Configuration.feed}."
     feed = Feed.get
     unsent_items = Feed.split_items(feed)[:unsent_item]
     if unsent_items.empty?

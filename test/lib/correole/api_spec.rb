@@ -160,7 +160,7 @@ describe 'subscribers' do
             email = "delete_redirect_confirmation_#{Time.now.to_i}@gmail.com"
             send c.first, "#{c.second}/#{email}"
             last_response.status.must_equal 302, "response is not a redirect"
-            last_response.headers['Location'].must_equal Configuration::CONFIRMATION_URI
+            last_response.headers['Location'].must_equal Configuration.confirmation_uri
           end
 
         end
