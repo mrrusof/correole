@@ -4,6 +4,7 @@ require 'dependencies'
 
 if ARGV.empty?
   Api.run!
+  exit
 end
 
 Configuration.quiet = ARGV.second == '-q'
