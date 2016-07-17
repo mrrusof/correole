@@ -9,7 +9,7 @@ class Send
       return
     end
     qputs "There are #{split_feed[:unsent_item].length} new items. The items are the following."
-    split_feed[:unsent_item].each_with_index { |i, j| qputs "[#{j}] #{i.link}" }
+    split_feed[:unsent_item].each_with_index { |i, j| qputs "[#{j+1}] #{i.link}" }
     html = compose_html split_feed
     plain = compose_plain split_feed
     count = Subscriber.count
