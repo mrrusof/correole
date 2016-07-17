@@ -1,0 +1,10 @@
+language: ruby
+rvm:
+  - 2.2.1
+script:
+  - RACK_ENV=test bundle exec rake db:schema:load
+  - bundle exec rake test
+deploy:
+  provider: heroku
+  api_key:
+    secure: olAovQXOLN00lw8GNaRlsVaSW3jFi135NBJ77hKrBBg+lM41n0VhhiZxBT8qw7h7MTCr4f0WoYqx49yiwBENc3YbtaXCZu0puZOWOId6zxA7bKa/nSPUYCuzhdAFgiu67vY1FTjvx1/7BuECc1gokpotAk+485fkRCT2Gh96EhLBvoVW4bw8jZXp79omws6iiNCmKn5WOEZ7xiMwzIw8P3F6fAg90cZQ/Yyf2oefriBJUwPzXcUvPK/zoGYU3raVinNXucCEdIjrqhkUXrDCktIg8Co/tUyT1E/EatSrRhzxvscNv8pSycmyhlkkLU8tlJBJ6eeGetwR8+O+Vj7JP7qlZrciRpY6oX4uq7smiW3MK/lTX8lAkLhYfsioxdpXrAoY2p6A/WBx+Aq2jHv3wm/Uy65alleUzANKH54quTVbtTM1QWJWpq6BV3iOvtNhMXpXHSklKzM6GLXSjGMSM07EIXN80BNdAXTrH0OcYkF9zoSRd9HaF/31P2qnFpAxMItSEftvsqdwFI5+l75/D2tzGQl+epskMW0FOo8JDX0MswA/Ap9vNU2TjRkDItkH/XnoqVng2t5aeforFLvUsIlIc6L6k5+YlE3JPBanj5lAiMowq7fk/TTZXNjJdJIEYXip5iz8ne+lpB3oo2WVl/Q6JTIJqI5OYXAvUz/ztcE=
