@@ -2,6 +2,7 @@ ENV['RACK_ENV'] = 'test'
 ENV['CONFIG_FILE'] = 'test.config.yml'
 
 require 'minitest/autorun'
+require 'minitest/profile'
 require 'rack/test'
 require 'dependencies'
 require 'thin'

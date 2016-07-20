@@ -30,6 +30,7 @@ GEM
     mime-types-data (3.2016.0221)
     mini-smtp-server (0.0.2)
     minitest (5.9.0)
+    minitest-profile (0.0.2)
     pg (0.18.4)
     pry (0.10.3)
       coderay (~> 1.1.0)
@@ -67,6 +68,7 @@ DEPENDENCIES
   mail (~> 2.6)
   mini-smtp-server (~> 0)
   minitest (~> 5.8)
+  minitest-profile (~> 0.0.2)
   pg
   pry
   rack-test (~> 0.6)

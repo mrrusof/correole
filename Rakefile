@@ -2,6 +2,8 @@ require 'sinatra/activerecord/rake'
 require 'rake'
 require 'rake/testtask'
 
+task :default => [:test]
+
 namespace :db do
   task :load_config do
     require 'sinatra/activerecord'
