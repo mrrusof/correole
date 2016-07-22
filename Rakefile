@@ -10,7 +10,10 @@ namespace :db do
   end
 end
 
+task :test => ['db:migrate']
+
 Rake::TestTask.new do |t|
   t.libs = [ 'lib', 'config' ]
   t.pattern = 'test/**/*_spec.rb'
+  t.options = '--profile'
 end

@@ -1,8 +1,38 @@
 require File.expand_path '../../test_helper.rb', __FILE__
 
+START_PORT=9090
+
+$curr_port = START_PORT
+$m = Mutex.new
+def next_port
+  $m.lock
+  port = $curr_port += 1
+  $m.unlock
+  return port
+end
+
+def silence
+  # Go quiet
+  if Configuration.quiet
+    $curr_stdout = $stdout
+    $curr_stderr = $stderr
+    $stdout = StringIO.new
+    $stderr = StringIO.new
+    Thin::Logging.silent = true
+  end
+end
+
+def clamor
+  # Stop the silence
+  if Configuration.quiet
+    $stdout = $curr_stdout
+    $stderr = $curr_stderr
+  end
+end
+
 describe 'Command `correole`' do
 
-  let(:port) { 5987 }
+  let(:port) { START_PORT - 1 }
   let(:timeout) { 10 }
   let(:root) { File.expand_path '../../../', __FILE__ }
   let(:cmd) {
@@ -16,7 +46,6 @@ EOF
     spawn(cmd, [ :err, :out ] => '/dev/null')
     stop = Time.now.to_i + timeout
     while ! system("lsof -i TCP:#{port}", [ :err, :out ] => '/dev/null') && Time.now.to_i < stop
-      print '#'
       sleep 0.25
     end
     assert system("lsof -i TCP:#{port}", [ :err, :out ] => '/dev/null'), "Correole did not start within #{timeout} seconds."
@@ -107,22 +136,28 @@ class SmtpServer < MiniSmtpServer
   end
 end
 
-describe 'Submission of newsletter' do
+class SubmissionOfNewsletter < Minitest::Spec
+
+  parallelize_me!
+
+  @desc = 'Submission of newsletter'
 
   let(:recipient) { 'ruslan@localhost' }
   let(:timeout) { 10 }
-  let(:http_port) { 9090 }
+  let(:http_port) { START_PORT - 2 }
   let(:http_host) { 'localhost' }
-  let(:smtp_port) { 9191 }
+  let(:smtp_port) { next_port }
   let(:smtp_host) { 'localhost' }
   let(:feed_uri) { "http://#{http_host}:#{http_port}/feed.xml" }
   let(:root) { File.expand_path '../../../', __FILE__ }
+  let(:db_file) { "/tmp/test_#{smtp_port}.db" }
   let(:cmd_send) {
     <<-EOF
 RACK_ENV=test \
 FEED=#{feed_uri} \
 SMTP_HOST=#{smtp_host} \
 SMTP_PORT=#{smtp_port} \
+DATABASE_URL=sqlite3://localhost#{db_file} \
 bundle exec ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole send #{Configuration.quiet ? '-q' : ''}
 EOF
   }
@@ -132,54 +167,56 @@ RACK_ENV=test \
 FEED=#{feed_uri} \
 SMTP_HOST=#{smtp_host} \
 SMTP_PORT=#{smtp_port} \
+DATABASE_URL=sqlite3://localhost#{db_file} \
 bundle exec ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole purge #{Configuration.quiet ? '-q' : ''}
 EOF
   }
 
   before do
-    # Configure only one subscriber
-    Subscriber.destroy_all
-    s = Subscriber.new(email: recipient)
-    s.save
+    $m.lock
+    @@once ||= begin
+                 # Configure only one subscriber
+                 Subscriber.destroy_all
+                 s = Subscriber.new(email: recipient)
+                 s.save
 
-    # Forget everything we have sent
-    Item.destroy_all
+                 # Forget everything we have sent
+                 Item.destroy_all
+
+                 # Provide feed
+                 silence
+                 FeedServer.set :port, http_port
+                 @@http_server = Thread.new do
+                   FeedServer.run!
+                 end
+                 stop = Time.now.to_i + timeout
+                 while ! FeedServer.running? && Time.now.to_i < stop
+                   sleep 0.25
+                 end
+                 clamor
+
+                 true
+               end
+    $m.unlock
+
+    # Create database
+    FileUtils.cp  "#{root}/test.db", db_file
 
     # Catch mail
     @smtp_server = SmtpServer.new(smtp_port, 'localhost', 1)
     @smtp_server.start
-
-    # Go quiet
-    if Configuration.quiet
-      @curr_stdout = $stdout
-      @curr_stderr = $stderr
-      $stdout = StringIO.new
-      $stderr = StringIO.new
-      Thin::Logging.silent = true
-    end
-
-    # Provide feed
-    FeedServer.set :port, http_port
-    @http_server = Thread.new { FeedServer.run! }
-    stop = Time.now.to_i + timeout
-    while ! FeedServer.running? && Time.now.to_i < stop
-      print '#'
-      sleep 0.25
-    end
   end
 
   after do
     @smtp_server.stop
     @smtp_server.join
 
-    FeedServer.quit!
-    @http_server.join
+    FileUtils.rm db_file
+  end
 
-    # Stop the silence
-    if Configuration.quiet
-      $stdout = @curr_stdout
-      $stderr = @curr_stderr
-    end
+  Minitest.after_run do
+    FeedServer.quit!
+    @@http_server.join
   end
 
   describe 'Command `correole send`' do
@@ -195,7 +232,6 @@ EOF
 
     it 'sends out email to recipient' do
       system(cmd_send)
-      puts @smtp_server.received
       @smtp_server.received.first[:to].must_equal "<#{recipient}>", "recipient is not #{recipient}"
     end
 

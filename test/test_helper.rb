@@ -1,5 +1,6 @@
 ENV['RACK_ENV'] = 'test'
 ENV['CONFIG_FILE'] = 'test.config.yml'
+ENV['N'] ||= '4'
 
 require 'minitest/autorun'
 require 'minitest/profile'
