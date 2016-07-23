@@ -1,9 +1,6 @@
 language: ruby
 rvm:
   - 2.2.1
-script:
-  - RACK_ENV=test bundle exec rake db:schema:load
-  - bundle exec rake test
 deploy:
   provider: heroku
   api_key:

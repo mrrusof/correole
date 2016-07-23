@@ -16,8 +16,7 @@ EOF
     spawn(cmd, [ :err, :out ] => '/dev/null')
     stop = Time.now.to_i + timeout
     while ! system("lsof -i TCP:#{port}", [ :err, :out ] => '/dev/null') && Time.now.to_i < stop
-      print '#'
-      sleep 0.25
+      sleep 0.0625
     end
     assert system("lsof -i TCP:#{port}", [ :err, :out ] => '/dev/null'), "Correole did not start within #{timeout} seconds."
     pid = %x( lsof -i TCP:#{port} -F p )[1..-1]
@@ -163,8 +162,7 @@ EOF
     @http_server = Thread.new { FeedServer.run! }
     stop = Time.now.to_i + timeout
     while ! FeedServer.running? && Time.now.to_i < stop
-      print '#'
-      sleep 0.25
+      sleep 0.0625
     end
   end
 
