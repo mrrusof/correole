@@ -1,4 +1,3 @@
-# encoding: UTF-8
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -20,16 +19,14 @@ ActiveRecord::Schema.define(version: 2) do
     t.datetime "pub_date"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
+    t.index ["link"], name: "index_items_on_link", unique: true
   end
-
-  add_index "items", ["link"], name: "index_items_on_link", unique: true
 
   create_table "subscribers", force: :cascade do |t|
     t.string   "email",      null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_subscribers_on_email", unique: true
   end
-
-  add_index "subscribers", ["email"], name: "index_subscribers_on_email", unique: true
 
 end

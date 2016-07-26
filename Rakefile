@@ -16,3 +16,13 @@ Rake::TestTask.new do |t|
   t.libs = [ 'lib', 'config' ]
   t.pattern = 'test/**/*_spec.rb'
 end
+
+desc 'Build gem'
+task :gem do
+  system 'gem build correole.gemspec'
+end
+
+desc 'Publish gem'
+task :publish => :gem do
+  system "gem push correole-#{Correole::VERSION}.gem"
+end
