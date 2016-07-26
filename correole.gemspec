@@ -14,7 +14,7 @@ EOF
   s.homepage    = 'http://ruslanledesma.com/'
   s.license     = 'MIT'
 
-  s.files          = `git ls-files config lib db/migrate`.split($\).
+  s.files          = `find config lib db/migrate`.split($\).
                      keep_if { |f| f[-3..-1] == '.rb'}
   [ 'database.yml',
     'example.config.yml',
