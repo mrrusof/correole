@@ -26,11 +26,7 @@ bundle install
 bundle exec rake test
 ```
 
-# Installation
-
-`gem install correole`
-
-# Install in Heroku
+# Deploy it
 
 Deploy to Heroku.
 
