@@ -55,11 +55,10 @@ describe 'Configuration' do
     end
 
     it 'loads configuration from file' do
-      ENV['CONFIG_FILE'] = 'test.config.yml'
+      ENV['CONFIG_FILE'] = File.expand_path '../../../config/test.config.yml', __FILE__
       Configuration.quiet = true
       Configuration.load!
-      config_file = File.expand_path "../../../config/#{ENV['CONFIG_FILE']}", __FILE__
-      YAML.load_file(config_file)[ENV['RACK_ENV']].each_pair do |k, v|
+      YAML.load_file(ENV['CONFIG_FILE'])[ENV['RACK_ENV']].each_pair do |k, v|
         v = v.to_s
         k = k.upcase
         v = massage_config_param(k, v)

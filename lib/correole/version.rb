@@ -1,4 +1,4 @@
 module Correole
-  VERSION = '0.0.0'
-  DATE = '2016-07-25'
+  VERSION = '0.0.5'
+  DATE = '2016-07-26'
 end

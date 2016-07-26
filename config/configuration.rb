@@ -2,7 +2,7 @@ DEFAULT_ENV = 'production'
 DEFAULT_CONFIG_FILE = 'config.yml'
 
 ENV['RACK_ENV'] ||= DEFAULT_ENV
-ENV['CONFIG_FILE'] ||= DEFAULT_CONFIG_FILE
+ENV['CONFIG_FILE'] ||= File.expand_path "../#{DEFAULT_CONFIG_FILE}", __FILE__
 
 class Configuration
 
@@ -30,10 +30,9 @@ class Configuration
 
   def self.load!
 
-    config_file = File.expand_path "../#{ENV['CONFIG_FILE']}", __FILE__
-    YAML.load_file(config_file)[ENV['RACK_ENV']].each_pair do |k, v|
+    YAML.load_file(ENV['CONFIG_FILE'])[ENV['RACK_ENV']].each_pair do |k, v|
       ENV[k.upcase] ||= v.to_s rescue abort "Cannot load configuration key #{k}."
-    end rescue qputs "Could not load configuration file #{config_file}."
+    end rescue qputs "Could not load configuration file #{ENV['CONFIG_FILE']}."
 
     CONFIG_KEYS.each do |k|
       case k

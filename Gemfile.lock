@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    correole (0.0.0)
+    correole (0.0.5)
       activerecord (~> 4.2)
       activesupport (~> 4.2)
       mail (~> 2.6)
