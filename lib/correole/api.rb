@@ -26,7 +26,7 @@ class Api < Sinatra::Base
       logger.info("Already subscribed #{params[:email]}.")
       Subscriber.find_by_email(params[:email]).touch
     end
-    "#{params[:email]}\n"
+    [201, "#{params[:email]}\n"]
   end
 
   def unsubscribe(params)

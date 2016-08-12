@@ -36,7 +36,7 @@ describe 'subscribers' do
     it 'returns the subscriber email and responds ok' do
       email = "return_created_subscriber_email_#{Time.now.to_i}@gmail.com"
       put "/subscribers/#{email}"
-      last_response.status.must_equal 200, 'response is not ok'
+      last_response.status.must_equal 201, 'response is not 201 Created'
       assert_equal 'text/plain;charset=utf-8', last_response.content_type, "content type is not plain text, utf-8"
       assert_equal "#{email}\n", last_response.body
     end
