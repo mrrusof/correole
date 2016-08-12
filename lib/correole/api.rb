@@ -44,16 +44,19 @@ class Api < Sinatra::Base
   end
 
   def subscribers_method_not_allowed
+    response.headers['Allow'] = SUBSCRIBERS_ALLOWED_METHODS
     response.headers['Access-Control-Allow-Methods'] = SUBSCRIBERS_ALLOWED_METHODS
     405
   end
 
   def unsubscribe_method_not_allowed
+    response.headers['Allow'] = UNSUBSCRIBE_ALLOWED_METHODS
     response.headers['Access-Control-Allow-Methods'] = UNSUBSCRIBE_ALLOWED_METHODS
     405
   end
 
   options '/subscribers/:email' do
+    response.headers['Allow'] = SUBSCRIBERS_ALLOWED_METHODS
     response.headers['Access-Control-Allow-Methods'] = SUBSCRIBERS_ALLOWED_METHODS
     response.headers['Access-Control-Allow-Origin'] = SUBSCRIBERS_ALLOWED_ORIGIN
     200
@@ -77,6 +80,7 @@ class Api < Sinatra::Base
   end
 
   options "#{UNSUBSCRIBE_PATH}/:email" do
+    response.headers['Allow'] = UNSUBSCRIBE_ALLOWED_METHODS
     response.headers['Access-Control-Allow-Methods'] = UNSUBSCRIBE_ALLOWED_METHODS
     response.headers['Access-Control-Allow-Origin'] = UNSUBSCRIBE_ALLOWED_ORIGIN
     200

@@ -23,6 +23,7 @@ describe 'subscribers' do
         email = "allow_other_domains_#{Time.now.to_i}@gmail.com"
         options "#{c.first}/#{email}"
         last_response.status.must_equal 200, 'response is not ok'
+        last_response.headers['Allow'].must_equal c.second
         last_response.headers['Access-Control-Allow-Methods'].must_equal c.second
       end
 
@@ -171,22 +172,35 @@ describe 'subscribers' do
 
   end
 
-  describe 'methods not allowed' do
+  [ [ '/subscribers',
+      'PUT, DELETE, OPTIONS',
+      [:get, :post, :patch] ],
+    [ Api::UNSUBSCRIBE_PATH,
+      'GET, OPTIONS',
+      [:put, :delete, :post, :patch] ]
+  ].each do |c|
 
-    [ [:get, '/subscribers'],
-      [:post, '/subscribers'],
-      [:patch, '/subscribers'],
-      [:put, Api::UNSUBSCRIBE_PATH],
-      [:delete, Api::UNSUBSCRIBE_PATH],
-      [:post, Api::UNSUBSCRIBE_PATH],
-      [:patch, Api::UNSUBSCRIBE_PATH]
-    ].each do |c|
+    describe "methods not allowed for `#{c.first}/some@mail.com`" do
 
-      it "does not allow `#{c.first} '#{c.second}/some@mail.com'`" do
-        send c.first, "#{c.second}/some@mail.com"
-        assert last_response.method_not_allowed?, "does allow `#{c.first} '#{c.second}/some@mail.com'`"
-        assert_equal 'text/plain;charset=utf-8', last_response.content_type, "content type is not plain text, utf-8"
-        assert_equal "Method not allowed\n", last_response.body
+      c.third.each do |m|
+
+        it "does not allow #{m.to_s.upcase}" do
+          send m, "#{c.first}/some@mail.com"
+          assert last_response.method_not_allowed?, "does allow `#{m.to_s.upcase} '#{c.first}/some@mail.com'`"
+        end
+
+        it "returns plain text message for #{m.to_s.upcase}" do
+          send m, "#{c.first}/some@mail.com"
+          assert_equal 'text/plain;charset=utf-8', last_response.content_type, "content type is not plain text, utf-8"
+          assert_equal "Method not allowed\n", last_response.body
+        end
+
+        it "indicates allowed methods for #{m.to_s.upcase}" do
+          send m, "#{c.first}/some@mail.com"
+          assert_equal c.second, last_response.headers['Allow'], 'wrong header `Allow`'
+          assert_equal c.second, last_response.headers['Access-Control-Allow-Methods'], 'wrong header `Access-Control-Allow-Methods`'
+        end
+
       end
 
     end
