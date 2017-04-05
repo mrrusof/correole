@@ -72,6 +72,7 @@ describe 'Configuration' do
       config.each_pair { |k, v| ENV[k] = v }
       Configuration.quiet = true
       Configuration.load!
+      config.size.must_equal Configuration::CONFIG_KEYS.length
       config.each_pair do |k, v|
         v = massage_config_param(k, v)
         Configuration.send(k.downcase.to_sym).must_equal v, "configuration key #{k} was not set to #{v}"
