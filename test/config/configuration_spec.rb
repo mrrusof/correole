@@ -28,7 +28,7 @@ describe 'Configuration' do
       @curr_config_file = ENV['CONFIG_FILE']
       @curr_env = {}
       ENV['CONFIG_FILE'] = nil
-      config.keys.each do |k|
+      Configuration::CONFIG_KEYS.each do |k|
         Configuration.send("#{k.downcase}=".to_sym, nil)
         @curr_env[k] = ENV[k]
       end
@@ -58,7 +58,9 @@ describe 'Configuration' do
       ENV['CONFIG_FILE'] = File.expand_path '../../../config/test.config.yml', __FILE__
       Configuration.quiet = true
       Configuration.load!
-      YAML.load_file(ENV['CONFIG_FILE'])[ENV['RACK_ENV']].each_pair do |k, v|
+      yaml = YAML.load_file(ENV['CONFIG_FILE'])[ENV['RACK_ENV']]
+      yaml.size.must_equal Configuration::CONFIG_KEYS.length
+      yaml.each_pair do |k, v|
         v = v.to_s
         k = k.upcase
         v = massage_config_param(k, v)
