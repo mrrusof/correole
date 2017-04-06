@@ -33,13 +33,13 @@ class Send
 
   def self.template_bindings(split_feed)
     title = split_feed[:title]
-    unsent_items = split_feed[:unsent_item]
-    sent_items = split_feed[:sent_item]
-    unsubscribe_uri = nil # supress unused variable warning
-    unsubscribe_uri = "#{Configuration.base_uri}#{Api::UNSUBSCRIBE_PATH}/<%= recipient %>"
     title = '' if !title.is_a?(String)
+    unsent_items = split_feed[:unsent_item]
     unsent_items = [] if !unsent_items.is_a?(Array)
+    sent_items = split_feed[:sent_item]
     sent_items = [] if !unsent_items.is_a?(Array)
+    unsubscribe_uri = nil # supress unused variable warning
+    unsubscribe_uri = Configuration.unsubscribe_uri
     return binding
   end
 

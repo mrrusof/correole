@@ -41,6 +41,7 @@ Configure environment variables. For example:
 
 ```
 heroku config:set BASE_URI=https://application-name.herokuapp.com/
+heroku config:set UNSUBSCRIBE_URI=http://yourdomain.com/unsubscribe/
 heroku config:set CONFIRMATION_URI=http://yourdomain.com/unsubscribed/
 heroku config:set FEED=http://yourdomain.com/feed.xml
 heroku config:set SUBJECT='<%= title %>: newsletter for <%= date %>'

@@ -9,6 +9,7 @@ class Configuration
   CONFIG_KEYS = [
     'QUIET',
     'FEED',
+    'UNSUBSCRIBE_URI',
     'CONFIRMATION_URI',
     'BASE_URI',
     'SUBJECT',

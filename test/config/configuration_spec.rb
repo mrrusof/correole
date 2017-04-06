@@ -8,6 +8,7 @@ describe 'Configuration' do
       {
         'QUIET' => 'false',
         'FEED' => 'feed',
+        'UNSUBSCRIBE_URI' => 'unsubscribe_uri',
         'CONFIRMATION_URI' => 'confirmation_uri',
         'BASE_URI' => 'base_uri',
         'SUBJECT' => 'subject',
