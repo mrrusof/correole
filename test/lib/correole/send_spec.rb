@@ -218,54 +218,60 @@ EOF
       split_feed[:sent_item].each { |i| i.save }
     end
 
-    it 'sends out the newsletter to all subscribers' do
-      Net::HTTP.stub :get, xml do
-        Send.run!
-      end
-      Subscriber.find_each do |s|
-        assert Mail::TestMailer.deliveries.any? { |m| m.to[0] == s.email }, "newsletter was not sent to subscriber #{s.email}"
-      end
-    end
+    [ ['regular', false],
+      ['dry run', true],
+    ].each do |mode, dry_run|
 
-    it 'sends out the newsletter only to subscribers' do
-      Net::HTTP.stub :get, xml do
-        Send.run!
-      end
-      Subscriber.find_each do |s|
-        Mail::TestMailer.deliveries.keep_if { |m| m.to[0] != s.email }
-      end
-      Mail::TestMailer.deliveries.must_equal [], 'newsletter was sent to unknown recipients'
-    end
+      describe "in #{mode} mode" do
 
-    it 'sends each mail only to one recipient' do
-      Net::HTTP.stub :get, xml do
-        Send.run!
-      end
-      Mail::TestMailer.deliveries.each do |m|
-        m.to.length.must_equal 1, 'newsletter was not sent to only one recipient'
-      end
-    end
+        before do
+          Configuration.dry_run = dry_run
+          @recipients = Send.send(:recipients)
+          Net::HTTP.stub :get, xml do
+            Send.run!
+          end
+        end
 
-    it 'remembers each unsent item' do
-      Net::HTTP.stub :get, xml do
-        Send.run!
-      end
-      split_feed[:unsent_item].each do |i|
-        Item.find_by_link(i.link).wont_be_nil "item #{i.link} was not saved"
-      end
-    end
+        after do
+          Configuration.load!
+        end
 
-    it 'does not send any email when you already sent all available items' do
-      Net::HTTP.stub :get, xml do
-        Send.run!
+        it 'sends newsletter to all and only intended recipients' do
+          @recipients.each do |s|
+            assert Mail::TestMailer.deliveries.any? { |m| m.to[0] == s.email }, "newsletter was not sent to subscriber #{s.email}"
+          end
+          Mail::TestMailer.deliveries.each do |m|
+            m.to.each { |t| assert @recipients.any? { |r| r.email == t }, "newsletter was sent to unknown recipient #{t}" }
+          end
+        end
+
+        it 'uses one recipient per email' do
+          Mail::TestMailer.deliveries.each do |m|
+            m.to.length.must_equal 1, 'email was not sent to one recipient'
+          end
+        end
+
+        if not dry_run
+          it 'remembers each sent item' do
+            split_feed[:unsent_item].each do |i|
+              Item.find_by_link(i.link).wont_be_nil "item #{i.link} was not saved"
+            end
+          end
+        end
+
+        it 'does not send newsletter when there are no new items' do
+          Mail::TestMailer.deliveries.clear
+          split_feed[:unsent_item].each { |i| i.save } if dry_run
+          Net::HTTP.stub :get, xml do
+            Send.run!
+          end
+          Mail::TestMailer.deliveries.each do |m|
+            m.to.length.must_equal 0, "newsletter was sent to some recipients #{m.to}"
+          end
+        end
+
       end
-      Mail::TestMailer.deliveries.clear
-      Net::HTTP.stub :get, xml do
-        Send.run!
-      end
-      Mail::TestMailer.deliveries.each do |m|
-        m.to.length.must_equal 0, 'newsletter was sent to some recipient'
-      end
+
     end
 
     class SendOutExc < Send

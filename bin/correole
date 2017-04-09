@@ -12,6 +12,9 @@ Configuration.quiet = ARGV.second == '-q'
 case ARGV.first
 when 'send'
   Send.run!
+when 'test'
+  Configuration.dry_run = true
+  Send.run!
 when 'purge'
   Purge.run!
 else

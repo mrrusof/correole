@@ -1,5 +1,7 @@
 test:
   quiet: true
+  dry_run: false
+  dry_run_email: test@mail.com
   base_uri: http://test.ruslanledesma.com
   feed: http://ruslanledesma.com/feed.xml # reset by env for end-to-end test
   unsubscribe_uri: 'http://newsletter.ruslanledesma.com/unsubscribe/?email=<%= recipient %>'

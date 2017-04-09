@@ -1,5 +1,7 @@
 production: &prod
   quiet: false
+  dry_run: false
+  dry_run_email: your.email@mail.com
   base_uri: http://newsletter.ruslanledesma.com
   feed: http://ruslanledesma.com/feed.xml
   unsubscribe_uri: 'http://ruslanledesma.com/unsubscribe/?email=<%= recipient %>'

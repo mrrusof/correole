@@ -40,6 +40,9 @@ git push heroku master
 Configure environment variables. For example:
 
 ```
+heroku config:set QUIET=false
+heroku config:set DRY_RUN=false
+heroku config:set DRY_RUN_EMAIL=your.email@mail.com
 heroku config:set BASE_URI=https://application-name.herokuapp.com/
 heroku config:set UNSUBSCRIBE_URI=http://yourdomain.com/unsubscribe/
 heroku config:set CONFIRMATION_URI=http://yourdomain.com/unsubscribed/

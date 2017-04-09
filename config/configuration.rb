@@ -6,8 +6,13 @@ ENV['CONFIG_FILE'] ||= File.expand_path "../#{DEFAULT_CONFIG_FILE}", __FILE__
 
 class Configuration
 
-  CONFIG_KEYS = [
+  BOOLEAN_KEYS = [
     'QUIET',
+    'DRY_RUN',
+    'SMTP_TTLS'
+  ]
+  CONFIG_KEYS = [
+    'DRY_RUN_EMAIL',
     'FEED',
     'UNSUBSCRIBE_URI',
     'CONFIRMATION_URI',
@@ -21,7 +26,7 @@ class Configuration
     'SMTP_USER',
     'SMTP_PASS',
     'SMTP_AUTH',
-    'SMTP_TTLS' ]
+  ] + BOOLEAN_KEYS
 
   class << self
     CONFIG_KEYS.each do |k|
@@ -37,7 +42,7 @@ class Configuration
 
     CONFIG_KEYS.each do |k|
       case k
-      when 'QUIET', 'SMTP_TTLS'
+      when *BOOLEAN_KEYS
         # Cannot store boolean values in ENV, thus this.
         self.send("#{k.downcase}=".to_sym, ENV[k] == 'true')
       when 'HTML_TEMPLATE', 'PLAIN_TEMPLATE'

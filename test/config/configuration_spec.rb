@@ -7,6 +7,8 @@ describe 'Configuration' do
     let(:config) {
       {
         'QUIET' => 'false',
+        'DRY_RUN' => 'false',
+        'DRY_RUN_EMAIL' => 'test@mail.com',
         'FEED' => 'feed',
         'UNSUBSCRIBE_URI' => 'unsubscribe_uri',
         'CONFIRMATION_URI' => 'confirmation_uri',
@@ -44,7 +46,7 @@ describe 'Configuration' do
 
     def massage_config_param(k, v)
       case k
-      when 'QUIET', 'SMTP_TTLS'
+      when *Configuration::BOOLEAN_KEYS
         v = v == 'true'
       when 'HTML_TEMPLATE', 'PLAIN_TEMPLATE'
         file = File.expand_path "../../../config/#{v}", __FILE__
@@ -55,28 +57,55 @@ describe 'Configuration' do
       return v
     end
 
-    it 'loads configuration from file' do
-      ENV['CONFIG_FILE'] = File.expand_path '../../../config/test.config.yml', __FILE__
-      Configuration.quiet = true
-      Configuration.load!
-      yaml = YAML.load_file(ENV['CONFIG_FILE'])[ENV['RACK_ENV']]
-      yaml.size.must_equal Configuration::CONFIG_KEYS.length
-      yaml.each_pair do |k, v|
-        v = v.to_s
-        k = k.upcase
-        v = massage_config_param(k, v)
-        Configuration.send(k.downcase.to_sym).must_equal v, "configuration key #{k} was not set to #{v}"
+    describe 'file configuration' do
+
+      before do
+        ENV['CONFIG_FILE'] = File.expand_path '../../../config/test.config.yml', __FILE__
+        Configuration.quiet = true
+        Configuration.load!
       end
+
+      it 'loads configuration' do
+        yaml = YAML.load_file(ENV['CONFIG_FILE'])[ENV['RACK_ENV']]
+        yaml.size.must_equal Configuration::CONFIG_KEYS.length
+        yaml.each_pair do |k, v|
+          v = v.to_s
+          k = k.upcase
+          v = massage_config_param(k, v)
+          Configuration.send(k.downcase.to_sym).must_equal v, "configuration key #{k} was not set to #{v}"
+        end
+      end
+
+      it 'sets boolean values for boolean keys' do
+        Configuration::BOOLEAN_KEYS.each do |k|
+          v = Configuration.send k.downcase.to_sym
+          v.must_equal !!v, "configuration key #{k} was not set to a boolean value"
+        end
+      end
+
     end
 
-    it 'loads configuration from environment' do
-      config.each_pair { |k, v| ENV[k] = v }
-      Configuration.quiet = true
-      Configuration.load!
-      config.size.must_equal Configuration::CONFIG_KEYS.length
-      config.each_pair do |k, v|
-        v = massage_config_param(k, v)
-        Configuration.send(k.downcase.to_sym).must_equal v, "configuration key #{k} was not set to #{v}"
+    describe 'environment configuration' do
+
+      before do
+        config.each_pair { |k, v| ENV[k] = v }
+        Configuration.quiet = true
+        Configuration.load!
+      end
+
+      it 'loads configuration' do
+        config.size.must_equal Configuration::CONFIG_KEYS.length
+        config.each_pair do |k, v|
+          v = massage_config_param(k, v)
+          Configuration.send(k.downcase.to_sym).must_equal v, "configuration key #{k} was not set to #{v}"
+        end
+      end
+
+      it 'sets boolean values for boolean keys' do
+        Configuration::BOOLEAN_KEYS.each do |k|
+          v = Configuration.send k.downcase.to_sym
+          v.must_equal !!v, "configuration key #{k} was not set to a boolean value"
+        end
       end
 
     end

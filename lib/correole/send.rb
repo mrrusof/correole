@@ -12,24 +12,34 @@ class Send
     split_feed[:unsent_item].each_with_index { |i, j| qputs "[#{j+1}] #{i.link}" }
     html = compose_html split_feed
     plain = compose_plain split_feed
-    count = Subscriber.count
-    Subscriber.find_each.with_index do |s, i|
-      html_s = personalize html, s.email
-      plain_s = personalize plain, s.email
-      qputs "[#{i+1}/#{count}] Send newsletter to #{s.email}."
+    rr = recipients
+    rr.each_with_index do |r, i|
+      html_r = personalize html, r.email
+      plain_r = personalize plain, r.email
+      qputs "[#{i+1}/#{rr.size}] Send newsletter to #{r.email}."
       begin
-        send_out feed[:title], html_s, plain_s, s.email
+        send_out feed[:title], html_r, plain_r, r.email
       rescue => exc
-        qputs "Could not send newsletter to #{s.email} for the following reason."
+        qputs "Could not send newsletter to #{r.email} for the following reason."
         qputs exc.message
       end
     end
-    qputs 'Remember new items.'
-    split_feed[:unsent_item].each { |i| i.save }
+    if not Configuration.dry_run
+      qputs 'Remember new items.'
+      split_feed[:unsent_item].each { |i| i.save }
+    end
     qputs 'Done.'
   end
 
   private
+
+  def self.recipients
+    if Configuration.dry_run
+      s = Subscriber.new(email: Configuration.dry_run_email)
+      return [s].each
+    end
+    return Subscriber.find_each
+  end
 
   def self.template_bindings(split_feed)
     title = split_feed[:title]

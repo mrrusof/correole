@@ -108,7 +108,7 @@ end
 
 describe 'Submission of newsletter' do
 
-  let(:recipient) { 'ruslan@localhost' }
+  let(:recipient) { 'subscriber@localhost' }
   let(:timeout) { 10 }
   let(:http_port) { 9090 }
   let(:http_host) { 'localhost' }
@@ -123,6 +123,15 @@ FEED=#{feed_uri} \
 SMTP_HOST=#{smtp_host} \
 SMTP_PORT=#{smtp_port} \
 bundle exec ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole send #{Configuration.quiet ? '-q' : ''}
+EOF
+  }
+  let(:cmd_test) {
+    <<-EOF
+RACK_ENV=test \
+FEED=#{feed_uri} \
+SMTP_HOST=#{smtp_host} \
+SMTP_PORT=#{smtp_port} \
+bundle exec ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole test #{Configuration.quiet ? '-q' : ''}
 EOF
   }
   let(:cmd_purge) {
@@ -197,11 +206,38 @@ EOF
       @smtp_server.received.first[:to].must_equal "<#{recipient}>", "recipient is not #{recipient}"
     end
 
-    it 'does not send any email when you already sent all available items' do
+    it 'remembers sent items and does not send any of them again' do
       system(cmd_send)
       @smtp_server.received.clear
       system(cmd_send)
       @smtp_server.received.length.must_equal 0, 'newsletter was sent to some recipient'
+    end
+
+  end
+
+  describe 'Command `correole test`' do
+
+    it 'does not fail' do
+      assert system(cmd_test), "command `#{cmd_test}` fails"
+    end
+
+    it 'sends out only one email' do
+      system(cmd_test)
+      @smtp_server.received.length.must_equal 1, 'did not send only one email'
+    end
+
+    it 'sends out email to recipient' do
+      email = Configuration.dry_run_email
+      system(cmd_test)
+      puts @smtp_server.received
+      @smtp_server.received.first[:to].must_equal "<#{email}>", "recipient is not #{email}"
+    end
+
+    it 'does not remember sent items so that it sends them again' do
+      system(cmd_test)
+      @smtp_server.received.clear
+      system(cmd_test)
+      @smtp_server.received.length.must_equal 1, 'newsletter was not sent to only one recipient'
     end
 
   end
