@@ -44,7 +44,7 @@ heroku config:set QUIET=false
 heroku config:set DRY_RUN=false
 heroku config:set DRY_RUN_EMAIL=your.email@mail.com
 heroku config:set BASE_URI=https://application-name.herokuapp.com/
-heroku config:set UNSUBSCRIBE_URI=http://yourdomain.com/unsubscribe/
+heroku config:set UNSUBSCRIBE_URI=http://yourdomain.com/unsubscribe/?email=<%= recipient %>'
 heroku config:set CONFIRMATION_URI=http://yourdomain.com/unsubscribed/
 heroku config:set FEED=http://yourdomain.com/feed.xml
 heroku config:set SUBJECT='<%= title %>: newsletter for <%= date %>'
