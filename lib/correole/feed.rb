@@ -33,5 +33,4 @@ class Feed
     return split_feed
   end
 
-
 end

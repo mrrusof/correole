@@ -9,10 +9,13 @@ class Api < Sinatra::Base
   set :server, :thin
   enable :logging
   disable :show_exceptions
-#  use ActiveRecord::ConnectionAdapters::ConnectionManagement
 
   before do
     content_type 'text/plain'
+  end
+
+  after do
+     ActiveRecord::Base.clear_active_connections!
   end
 
   def subscribe(params)

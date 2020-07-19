@@ -46,8 +46,8 @@ class Configuration
         # Cannot store boolean values in ENV, thus this.
         self.send("#{k.downcase}=".to_sym, ENV[k] == 'true')
       when 'HTML_TEMPLATE', 'PLAIN_TEMPLATE'
-        file = File.expand_path "../#{ENV[k]}", __FILE__
-        template = File.read file rescue abort "Cannot load template #{ENV[k]}."
+        path = File.expand_path "../#{ENV[k]}", __FILE__
+        template = File.read path rescue abort "Cannot load template #{path}."
         self.send("#{k.downcase}=".to_sym, template)
       when 'SMTP_USER', 'SMTP_PASS'
         # For user name and password, Mail interprets '' as an input.

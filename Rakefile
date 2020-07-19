@@ -2,8 +2,6 @@ require 'sinatra/activerecord/rake'
 require 'rake'
 require 'rake/testtask'
 
-ENV['RACK_ENV'] ||= 'test'
-
 task :default => [:test]
 
 namespace :db do
@@ -25,4 +23,19 @@ end
 desc 'Publish gem'
 task :publish => :gem do
   system "gem push correole-#{Correole::VERSION}.gem"
+end
+
+desc 'Clean project'
+task :clean do
+  system <<~'EOS'
+         rm -rf *.gem *.db
+         find . -name '*~' -delete
+         EOS
+end
+
+namespace :local do
+  desc 'Runs correole in API mode'
+  task :api do
+    system 'bundle exec foreman start api'
+  end
 end

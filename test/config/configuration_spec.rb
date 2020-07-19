@@ -15,8 +15,8 @@ describe 'Configuration' do
         'BASE_URI' => 'base_uri',
         'SUBJECT' => 'subject',
         'FROM' => 'from',
-        'HTML_TEMPLATE' => 'test.html.erb',
-        'PLAIN_TEMPLATE' => 'test.txt.erb',
+        'HTML_TEMPLATE' => 'templates/test.html.erb',
+        'PLAIN_TEMPLATE' => 'templates/test.txt.erb',
         'SMTP_HOST' => 'smtp_host',
         'SMTP_PORT' => 'smtp_port',
         'SMTP_USER' => 'smtp_user',
@@ -60,7 +60,7 @@ describe 'Configuration' do
     describe 'file configuration' do
 
       before do
-        ENV['CONFIG_FILE'] = File.expand_path '../../../config/test.config.yml', __FILE__
+        ENV['CONFIG_FILE'] = File.expand_path '../../../config/config.yml', __FILE__
         Configuration.quiet = true
         Configuration.load!
       end

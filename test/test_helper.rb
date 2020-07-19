@@ -1,5 +1,5 @@
 ENV['RACK_ENV'] = 'test'
-ENV['CONFIG_FILE'] = File.expand_path '../../config/test.config.yml', __FILE__
+ENV['CONFIG_FILE'] = File.expand_path '../../config/config.yml', __FILE__
 
 require 'minitest/autorun'
 require 'rack/test'

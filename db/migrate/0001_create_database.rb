@@ -1,4 +1,4 @@
-class CreateDatabase < ActiveRecord::Migration
+class CreateDatabase < ActiveRecord::Migration[6.0]
   def change
     create_table :subscribers do |t|
       t.string :email, null: false
