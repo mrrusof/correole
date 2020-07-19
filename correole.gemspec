@@ -17,12 +17,11 @@ EOF
   s.files          = `find config lib db/migrate`.split($\).
                      keep_if { |f| f[-3..-1] == '.rb'}
   [ 'database.yml',
-    'example.config.yml',
-    'production.html.erb',
-    'production.txt.erb',
-    'test.config.yml',
-    'test.html.erb',
-    'test.txt.erb' ].each { |f| s.files << "config/#{f}" }
+    'config.yml',
+    'templates/production.html.erb',
+    'templates/production.txt.erb',
+    'templates/test.html.erb',
+    'templates/test.txt.erb' ].each { |f| s.files << "config/#{f}" }
   s.files          << 'bin/correole'
   s.require_paths  = ['config', 'lib']
   s.executables    = ['correole']
