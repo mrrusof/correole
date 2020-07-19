@@ -247,14 +247,14 @@ EOF
 
         it 'uses one recipient per email' do
           Mail::TestMailer.deliveries.each do |m|
-            m.to.length.must_equal 1, 'email was not sent to one recipient'
+            _(m.to.length).must_equal 1, 'email was not sent to one recipient'
           end
         end
 
         if not dry_run
           it 'remembers each sent item' do
             split_feed[:unsent_item].each do |i|
-              Item.find_by_link(i.link).wont_be_nil "item #{i.link} was not saved"
+              _(Item.find_by_link(i.link)).wont_be_nil "item #{i.link} was not saved"
             end
           end
         end
@@ -266,7 +266,7 @@ EOF
             Send.run!
           end
           Mail::TestMailer.deliveries.each do |m|
-            m.to.length.must_equal 0, "newsletter was sent to some recipients #{m.to}"
+            _(m.to.length).must_equal 0, "newsletter was sent to some recipients #{m.to}"
           end
         end
 
@@ -297,7 +297,7 @@ EOF
       end
       assert SendOutExc.exception, 'there was no exception'
       Mail::TestMailer.deliveries.each do |m|
-        m.to.length.must_equal 1, 'newsletter was not sent to only one recipient'
+        _(m.to.length).must_equal 1, 'newsletter was not sent to only one recipient'
       end
     end
 
@@ -307,10 +307,10 @@ EOF
 
     it 'returns template bindings' do
       b = Send.send(:template_bindings, split_feed)
-      b.eval('title').must_equal split_feed[:title]
-      b.eval('unsent_items').must_equal split_feed[:unsent_item]
-      b.eval('sent_items').must_equal split_feed[:sent_item]
-      b.eval('unsubscribe_uri').must_equal Configuration.unsubscribe_uri
+      _(b.eval('title')).must_equal split_feed[:title]
+      _(b.eval('unsent_items')).must_equal split_feed[:unsent_item]
+      _(b.eval('sent_items')).must_equal split_feed[:sent_item]
+      _(b.eval('unsubscribe_uri')).must_equal Configuration.unsubscribe_uri
     end
 
   end
@@ -318,7 +318,7 @@ EOF
   describe '.compose_html' do
 
     it 'composes html message from split feed' do
-      Send.send(:compose_html, split_feed).must_equal html
+      _(Send.send(:compose_html, split_feed)).must_equal html
     end
 
   end
@@ -326,7 +326,7 @@ EOF
   describe '.compose_plain' do
 
     it 'composes plain message from split feed' do
-      Send.send(:compose_plain, split_feed).must_equal plain
+      _(Send.send(:compose_plain, split_feed)).must_equal plain
     end
 
   end
@@ -334,11 +334,11 @@ EOF
   describe '.personalize' do
 
     it 'personalizes given html message for given recipient' do
-      Send.send(:personalize, html, subscriber1.email).must_equal html_subscriber1
+      _(Send.send(:personalize, html, subscriber1.email)).must_equal html_subscriber1
     end
 
     it 'personalizes given plain message for given recipient' do
-      Send.send(:personalize, plain, subscriber1.email).must_equal plain_subscriber1
+      _(Send.send(:personalize, plain, subscriber1.email)).must_equal plain_subscriber1
     end
 
   end
@@ -352,28 +352,28 @@ EOF
 
     it 'sends out the message' do
       mail = Send.send(:send_out, title, html_subscriber1, plain_subscriber1, subscriber1.email)
-      Mail::TestMailer.deliveries[0].must_equal mail
+      _(Mail::TestMailer.deliveries[0]).must_equal mail
     end
 
     it 'applies title to the sender' do
       Send.send(:send_out, title, html_subscriber1, plain_subscriber1, subscriber1.email)
       mail = Mail::TestMailer.deliveries[0]
-      /From: ([^\r\n]+)/.match(mail.to_s)[1].must_equal ERB.new(Configuration.from).result(binding)
+      _(/From: ([^\r\n]+)/.match(mail.to_s)[1]).must_equal ERB.new(Configuration.from).result(binding)
     end
 
     it 'addresses email to given recipient' do
       Send.send(:send_out, title, html_subscriber1, plain_subscriber1, subscriber1.email)
       mail = Mail::TestMailer.deliveries[0]
-      /To: ([^\r\n]+)/.match(mail.to_s)[1].must_equal subscriber1.email
+      _(/To: ([^\r\n]+)/.match(mail.to_s)[1]).must_equal subscriber1.email
     end
 
     it 'applies title and date to the subject' do
-      date = nil # supress unused variable warning
       date = Date.today.strftime('%a, %d %b %Y')
+      if false then date end # suppress unused variable warning
       expected = ERB.new(Configuration.subject).result(binding)
       Send.send(:send_out, title, html_subscriber1, plain_subscriber1, subscriber1.email)
       mail = Mail::TestMailer.deliveries[0]
-      /Subject: ([^\r\n]+)/.match(mail.to_s)[1].must_equal expected
+      _(/Subject: ([^\r\n]+)/.match(mail.to_s)[1]).must_equal expected
     end
 
     it 'includes the html part' do

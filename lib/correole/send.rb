@@ -47,22 +47,22 @@ class Send
     unsent_items = split_feed[:unsent_item]
     unsent_items = [] if !unsent_items.is_a?(Array)
     sent_items = split_feed[:sent_item]
-    sent_items = [] if !unsent_items.is_a?(Array)
-    unsubscribe_uri = nil # supress unused variable warning
+    sent_items = [] if !sent_items.is_a?(Array)
     unsubscribe_uri = Configuration.unsubscribe_uri
+    if false then unsubscribe_uri end # suppress unused variable warning
     return binding
   end
 
   def self.compose_html(split_feed)
     template = Configuration.html_template
     bindings = template_bindings(split_feed)
-    return ERB.new(template, nil, '-').result(bindings)
+    return ERB.new(template, trim_mode: '-').result(bindings)
   end
 
   def self.compose_plain(split_feed)
     template = Configuration.plain_template
     bindings = template_bindings(split_feed)
-    return ERB.new(template, nil, '-').result(bindings)
+    return ERB.new(template, trim_mode: '-').result(bindings)
   end
 
   def self.personalize(message, recipient)
@@ -70,8 +70,8 @@ class Send
   end
 
   def self.send_out(title, html, plain, recipient)
-    date = nil # supress unused variable warning
     date = Date.today.strftime('%a, %d %b %Y')
+    if false then date end # suppress unused variable warning
     Mail.deliver do
       to      recipient
       from    ERB.new(Configuration.from).result(binding)

@@ -9,7 +9,7 @@ class Api < Sinatra::Base
   set :server, :thin
   enable :logging
   disable :show_exceptions
-  use ActiveRecord::ConnectionAdapters::ConnectionManagement
+#  use ActiveRecord::ConnectionAdapters::ConnectionManagement
 
   before do
     content_type 'text/plain'

@@ -15,16 +15,16 @@ describe 'subscribers' do
       it 'allows invocation from other domains' do
         email = "allow_other_domains_#{Time.now.to_i}@gmail.com"
         options "#{c.first}/#{email}"
-        last_response.status.must_equal 200, 'response is not ok'
-        last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
+        _(last_response.status).must_equal 200, 'response is not ok'
+        _(last_response.headers['Access-Control-Allow-Origin']).must_equal '*'
       end
 
       it "allows methods #{c.second}" do
         email = "allow_other_domains_#{Time.now.to_i}@gmail.com"
         options "#{c.first}/#{email}"
-        last_response.status.must_equal 200, 'response is not ok'
-        last_response.headers['Allow'].must_equal c.second
-        last_response.headers['Access-Control-Allow-Methods'].must_equal c.second
+        _(last_response.status).must_equal 200, 'response is not ok'
+        _(last_response.headers['Allow']).must_equal c.second
+        _(last_response.headers['Access-Control-Allow-Methods']).must_equal c.second
       end
 
     end
@@ -36,7 +36,7 @@ describe 'subscribers' do
     it 'returns the subscriber email and responds ok' do
       email = "return_created_subscriber_email_#{Time.now.to_i}@gmail.com"
       put "/subscribers/#{email}"
-      last_response.status.must_equal 201, 'response is not 201 Created'
+      _(last_response.status).must_equal 201, 'response is not 201 Created'
       assert_equal 'text/plain;charset=utf-8', last_response.content_type, "content type is not plain text, utf-8"
       assert_equal "#{email}\n", last_response.body
     end
@@ -44,11 +44,11 @@ describe 'subscribers' do
     it 'records the subscriber in the database' do
       email = "record_subscriber_#{Time.now.to_i}@gmail.com"
       s = Subscriber.find_by_email(email)
-      s.must_be_nil
+      _(s).must_be_nil
       put "/subscribers/#{email}"
       s = Subscriber.find_by_email(email)
-      s.wont_be_nil
-      s.email.must_equal email
+      _(s).wont_be_nil
+      _(s.email).must_equal email
     end
 
     it 'returns 400 if the email is not valid' do
@@ -60,39 +60,39 @@ describe 'subscribers' do
     it 'is idempotent' do
       email = "idempotent_subscribe_#{Time.now.to_i}@gmail.com"
       s = Subscriber.find_by_email(email)
-      s.must_be_nil
+      _(s).must_be_nil
       put "/subscribers/#{email}"
       s = Subscriber.find_by_email(email)
-      s.wont_be_nil
-      s.email.must_equal email
+      _(s).wont_be_nil
+      _(s.email).must_equal email
       put "/subscribers/#{email}"
       s = Subscriber.find_by_email(email)
-      s.wont_be_nil
-      s.email.must_equal email
+      _(s).wont_be_nil
+      _(s.email).must_equal email
     end
 
     it 'touches the subscriber when already subscribed' do
       email = "touch_#{Time.now.to_i}@gmail.com"
       s = Subscriber.find_by_email(email)
-      s.must_be_nil
+      _(s).must_be_nil
       put "/subscribers/#{email}"
       s = Subscriber.find_by_email(email)
-      s.wont_be_nil
-      s.email.must_equal email
+      _(s).wont_be_nil
+      _(s.email).must_equal email
       updated_at = s.updated_at
       s.updated_at = updated_at - 1
       s.save
       put "/subscribers/#{email}"
       s = Subscriber.find_by_email(email)
-      s.wont_be_nil
-      s.email.must_equal email
+      _(s).wont_be_nil
+      _(s.email).must_equal email
       assert s.updated_at >= updated_at, 'does not touch updated_at'
     end
 
     it 'allows subscriptions from other domains' do
       email = "subscribe_allow_other_domains_#{Time.now.to_i}@gmail.com"
       put "/subscribers/#{email}"
-      last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
+      _(last_response.headers['Access-Control-Allow-Origin']).must_equal '*'
     end
 
   end
@@ -120,7 +120,7 @@ describe 'subscribers' do
           s.save
           send c.first, "#{c.second}/#{email}"
           s = Subscriber.find_by_email(email)
-          s.must_be_nil
+          _(s).must_be_nil
         end
 
         it 'returns 400 if the email is not valid' do
@@ -135,16 +135,16 @@ describe 'subscribers' do
           s.save
           send c.first, "#{c.second}/#{email}"
           s = Subscriber.find_by_email(email)
-          s.must_be_nil
+          _(s).must_be_nil
           send c.first, "#{c.second}/#{email}"
           s = Subscriber.find_by_email(email)
-          s.must_be_nil
+          _(s).must_be_nil
         end
 
         it 'allows deletion from other domains' do
           email = "delete_allow_other_domains_#{Time.now.to_i}@gmail.com"
           send c.first, "#{c.second}/#{email}"
-          last_response.headers['Access-Control-Allow-Origin'].must_equal '*'
+          _(last_response.headers['Access-Control-Allow-Origin']).must_equal '*'
         end
 
         if c.first == :delete
@@ -152,7 +152,7 @@ describe 'subscribers' do
           it 'responds ok' do
             email = "delete_response_ok_#{Time.now.to_i}@gmail.com"
             send c.first, "#{c.second}/#{email}"
-            last_response.status.must_equal 200, 'response is not ok'
+            _(last_response.status).must_equal 200, 'response is not ok'
           end
 
         else
@@ -160,8 +160,8 @@ describe 'subscribers' do
           it 'redirects to confirmation page' do
             email = "delete_redirect_confirmation_#{Time.now.to_i}@gmail.com"
             send c.first, "#{c.second}/#{email}"
-            last_response.status.must_equal 302, "response is not a redirect"
-            last_response.headers['Location'].must_equal Configuration.confirmation_uri
+            _(last_response.status).must_equal 302, "response is not a redirect"
+            _(last_response.headers['Location']).must_equal Configuration.confirmation_uri
           end
 
         end

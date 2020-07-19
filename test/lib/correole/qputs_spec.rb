@@ -16,13 +16,13 @@ describe 'qputs' do
   it 'does print when not in quiet mode' do
     Configuration.quiet = false
     qputs 'test'
-    $stdout.string.must_equal "test\n", 'does not print'
+    _($stdout.string).must_equal "test\n", 'does not print'
   end
 
   it 'does not print when in quiet mode' do
     Configuration.quiet = true
     qputs 'test'
-    $stdout.string.must_equal '', 'does print'
+    _($stdout.string).must_equal '', 'does print'
   end
 
 end

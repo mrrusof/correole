@@ -27,18 +27,18 @@ EOF
   s.require_paths  = ['config', 'lib']
   s.executables    = ['correole']
 
-  s.add_dependency 'sinatra', '~> 1.4'
+  s.add_dependency 'sinatra', '~> 2.0'
   s.add_dependency 'thin', '~> 1.7'
   s.add_dependency 'sinatra-activerecord', '~> 2.0'
-  s.add_dependency 'activerecord', '~> 4.2'
-  s.add_dependency 'activesupport', '~> 4.2'
-  s.add_dependency 'mail', '~> 2.6'
+  s.add_dependency 'activerecord', '~> 6.0'
+  s.add_dependency 'activesupport', '~> 6.0'
+  s.add_dependency 'mail', '~> 2.7'
   s.add_dependency 'pg', '~> 0'
-  s.add_development_dependency 'sqlite3', '~> 1.3'
-  s.add_development_dependency 'minitest', '~> 5.9'
-  s.add_development_dependency 'rack-test', '~> 0.6'
+  s.add_development_dependency 'sqlite3', '~> 1.4'
+  s.add_development_dependency 'minitest', '~> 5.14'
+  s.add_development_dependency 'rack-test', '~> 1.1'
   s.add_development_dependency 'mini-smtp-server', '~> 0'
   s.add_development_dependency 'gserver', '~> 0'
-  s.add_development_dependency 'rake', '~> 11.2'
-  s.required_ruby_version = '~> 2.3.1'
+  s.add_development_dependency 'rake', '~> 13.0'
+  s.required_ruby_version = '~> 2.7.1'
 end

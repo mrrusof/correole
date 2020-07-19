@@ -134,7 +134,7 @@ EOF
 
     it 'projects the feed' do
       Net::HTTP.stub :get, xml do
-        Feed.get.must_equal feed
+        _(Feed.get).must_equal feed
       end
     end
 
@@ -146,18 +146,18 @@ EOF
       Item.destroy_all
       split_feed[:sent_item].each { |i| i.save }
       actual = Feed.split_items feed
-      actual[:unsent_item].sort.must_equal split_feed[:unsent_item].sort
+      _(actual[:unsent_item].sort).must_equal split_feed[:unsent_item].sort
     end
 
     it 'declares all items unsent when there are no sent items' do
       Item.destroy_all
-      Feed.split_items(feed).must_equal split_feed_none_sent
+      _(Feed.split_items(feed)).must_equal split_feed_none_sent
     end
 
     it 'declares all items sent when all items have been sent' do
       Item.destroy_all
       feed[:item].each { |i| i.save }
-      Feed.split_items(feed).must_equal split_feed_all_sent
+      _(Feed.split_items(feed)).must_equal split_feed_all_sent
     end
 
   end

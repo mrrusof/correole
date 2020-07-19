@@ -67,19 +67,19 @@ describe 'Configuration' do
 
       it 'loads configuration' do
         yaml = YAML.load_file(ENV['CONFIG_FILE'])[ENV['RACK_ENV']]
-        yaml.size.must_equal Configuration::CONFIG_KEYS.length
+        _(yaml.size).must_equal Configuration::CONFIG_KEYS.length
         yaml.each_pair do |k, v|
-          v = v.to_s
+          k_method = k.downcase.to_sym
           k = k.upcase
-          v = massage_config_param(k, v)
-          Configuration.send(k.downcase.to_sym).must_equal v, "configuration key #{k} was not set to #{v}"
+          v = massage_config_param(k, v.to_s)
+          assert Configuration.send(k_method) == v, "configuration key #{k} was not set to #{v}"
         end
       end
 
       it 'sets boolean values for boolean keys' do
         Configuration::BOOLEAN_KEYS.each do |k|
           v = Configuration.send k.downcase.to_sym
-          v.must_equal !!v, "configuration key #{k} was not set to a boolean value"
+          _(v).must_equal !!v, "configuration key #{k} was not set to a boolean value"
         end
       end
 
@@ -94,17 +94,18 @@ describe 'Configuration' do
       end
 
       it 'loads configuration' do
-        config.size.must_equal Configuration::CONFIG_KEYS.length
+        _(config.size).must_equal Configuration::CONFIG_KEYS.length
         config.each_pair do |k, v|
+          k_method = k.downcase.to_sym
           v = massage_config_param(k, v)
-          Configuration.send(k.downcase.to_sym).must_equal v, "configuration key #{k} was not set to #{v}"
+          _(Configuration.send(k_method)).must_equal v, "configuration key #{k} was not set to #{v}"
         end
       end
 
       it 'sets boolean values for boolean keys' do
         Configuration::BOOLEAN_KEYS.each do |k|
           v = Configuration.send k.downcase.to_sym
-          v.must_equal !!v, "configuration key #{k} was not set to a boolean value"
+          _(v).must_equal !!v, "configuration key #{k} was not set to a boolean value"
         end
       end
 

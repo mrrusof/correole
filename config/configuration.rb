@@ -37,7 +37,7 @@ class Configuration
   def self.load!
 
     YAML.load_file(ENV['CONFIG_FILE'])[ENV['RACK_ENV']].each_pair do |k, v|
-      ENV[k.upcase] ||= v.to_s rescue abort "Cannot load configuration key #{k}."
+      ENV[k.upcase] ||= v.to_s rescue abort("Cannot load configuration key #{k}.")
     end rescue qputs "Cannot load configuration file #{ENV['CONFIG_FILE']}. Using configuration given by environment."
 
     CONFIG_KEYS.each do |k|
