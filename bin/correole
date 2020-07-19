@@ -15,8 +15,8 @@ when 'send'
 when 'test'
   Configuration.dry_run = true
   Send.run!
-when 'purge'
-  Purge.run!
+when 'skip'
+  Skip.run!
 else
   abort "Unknown parameters #{ARGV}."
 end

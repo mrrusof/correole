@@ -1,6 +1,6 @@
 require File.expand_path '../../../test_helper.rb', __FILE__
 
-describe 'Purge' do
+describe 'Skip' do
 
   let(:title) { 'Ruslan writes code' }
   let(:item1_pub_date) { 'Fri, 17 Jun 2016 00:00:00 +0000' }
@@ -109,7 +109,7 @@ EOF
       Item.destroy_all
       split_feed[:unsent_item].each { |i| i.save }
       Net::HTTP.stub :get, xml do
-        Purge.run!
+        Skip.run!
       end
     end
 

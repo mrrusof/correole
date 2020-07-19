@@ -134,13 +134,13 @@ SMTP_PORT=#{smtp_port} \
 bundle exec ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole test #{Configuration.quiet ? '-q' : ''}
 EOF
   }
-  let(:cmd_purge) {
+  let(:cmd_skip) {
     <<-EOF
 RACK_ENV=test \
 FEED=#{feed_uri} \
 SMTP_HOST=#{smtp_host} \
 SMTP_PORT=#{smtp_port} \
-bundle exec ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole purge #{Configuration.quiet ? '-q' : ''}
+bundle exec ruby -I #{root}/lib -I #{root}/config #{root}/bin/correole skip #{Configuration.quiet ? '-q' : ''}
 EOF
   }
 
@@ -242,14 +242,14 @@ EOF
 
   end
 
-  describe 'Command `correole purge`' do
+  describe 'Command `correole skip`' do
 
     it 'does not fail' do
-      assert system(cmd_purge), "command `#{cmd_purge}` fails"
+      assert system(cmd_skip), "command `#{cmd_skip}` fails"
     end
 
     it 'remembers new items so that later `correole send` does not send any email' do
-      system(cmd_purge)
+      system(cmd_skip)
       @smtp_server.received.clear
       system(cmd_send)
       @smtp_server.received.length.must_equal 0, 'newsletter was sent to some recipient'

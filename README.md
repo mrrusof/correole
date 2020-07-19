@@ -15,7 +15,7 @@ Correole tries to send the newsletter to each reader and does not retry or recor
 Correole composes a multipart email for each reader from given templates and RSS feed.
 Correole includes only new RSS items in the email.
 Correole determines the RSS items that are new by remembering the items it sent in previous runs.
-You tell Correole to skip new items (remember items and not send email) by means of command `correole purge`.
+You tell Correole to skip new items (remember them and not send email) by means of command `correole skip`.
 
 # Get it
 
@@ -72,10 +72,10 @@ Correole provides three commands.
 - `correole`, from repo root `bundle exec ruby -I config -I lib bin/correole`. Runs API for subscribe / unsubscribe.
   - Subscribe: `curl -X PUT http://application-name.herokuapp.com/subscribers/subscriber@mail.com`
   - Unsubscribe:
-    - `curl -X DELETE http://application-name.herokuapp.com/subscribers/subscriber@mail.com`
-    - `curl -X GET http://application-name.herokuapp.com/unsubscribe/subscriber@mail.com`
+    - Plain: `curl -X DELETE http://application-name.herokuapp.com/subscribers/subscriber@mail.com`
+    - With redirect: `curl -X GET http://application-name.herokuapp.com/unsubscribe/subscriber@mail.com`
 - `correole send [-q]`, from repo root `bundle exec ruby -I config -I lib bin/correole send [-q]`. Composes and sends newsletter.
-- `correole purge [-q]`, from repo root `bundle exec ruby -I config -I lib bin/correole purge [-q]`. Skips current RSS items.
+- `correole skip [-q]`, from repo root `bundle exec ruby -I config -I lib bin/correole skip [-q]`. Skips current RSS items.
 
 # License
 

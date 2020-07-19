@@ -1,4 +1,4 @@
-class Purge
+class Skip
 
   def self.run!
     qputs "Fetch feed from #{Configuration.feed}."
@@ -10,7 +10,7 @@ class Purge
     end
     qputs "There are #{unsent_items.length} new items. The items are the following."
     unsent_items.each_with_index { |i, j| qputs "[#{j+1}] #{i.link}" }
-    qputs 'Purge the new items by remembering them.'
+    qputs 'Skip the new items by remembering them.'
     unsent_items.each { |i| i.save }
     qputs 'Done.'
   end
