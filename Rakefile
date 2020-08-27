@@ -35,7 +35,7 @@ end
 
 namespace :local do
   desc 'Runs correole in API mode'
-  task :api do
-    system 'bundle exec foreman start api'
+  task :web do
+    system 'bundle exec foreman start web'
   end
 end

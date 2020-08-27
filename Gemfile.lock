@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    correole (0.0.7)
+    correole (0.0.8)
       activerecord (~> 6.0)
       activesupport (~> 6.0)
       mail (~> 2.7)
@@ -25,12 +25,12 @@ GEM
       tzinfo (~> 1.1)
       zeitwerk (~> 2.2, >= 2.2.2)
     coderay (1.1.3)
-    concurrent-ruby (1.1.6)
+    concurrent-ruby (1.1.7)
     daemons (1.3.1)
     eventmachine (1.2.7)
     foreman (0.87.1)
     gserver (0.0.1)
-    i18n (1.8.3)
+    i18n (1.8.5)
       concurrent-ruby (~> 1.0)
     mail (2.7.1)
       mini_mime (>= 0.1.1)
