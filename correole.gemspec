@@ -26,7 +26,7 @@ EOF
   s.require_paths  = ['config', 'lib']
   s.executables    = ['correole']
 
-  s.add_dependency 'sinatra', '~> 2.0'
+  s.add_dependency 'sinatra', '>= 2', '< 4'
   s.add_dependency 'thin', '~> 1.7'
   s.add_dependency 'sinatra-activerecord', '~> 2.0'
   s.add_dependency 'activerecord', '~> 6.0'
